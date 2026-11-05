@@ -1,0 +1,1341 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23C8102E%22/><text x=%2216%22 y=%2222%22 font-family=%22Arial%22 font-weight=%22700%22 font-size=%2214%22 fill=%22white%22 text-anchor=%22middle%22>KW</text></svg>">
+<title>KWRG Agent Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: fixed ink sidebar (drawer on phones) + scrolling work surface; red only for brand moments and primary actions */
+:root{
+  --bg:#F3F4F6; --surface:#FFFFFF; --sunken:#EBECEF; --line:#DADCE1; --fg:#17181C; --muted:#5D616B;
+  --red:#B5121B; --red-ink:#FFFFFF; --red-soft:#FBE9EA; --ink:#14161B; --ink-2:#1E2129; --ink-fg:#E9EAEE; --ink-muted:#9A9EAA;
+  --ok:#1C7A46; --ok-soft:#E3F3EA; --warn:#9A5B00; --warn-soft:#FDF1DC; --bad:#B42318;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif; --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:10px; --shadow:0 1px 2px rgba(20,22,27,.06),0 4px 14px rgba(20,22,27,.05);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#101116; --surface:#181A21; --sunken:#1F222A; --line:#2C3039; --fg:#ECEDF1; --muted:#A0A4AF;
+  --red:#E0323C; --red-ink:#FFFFFF; --red-soft:#3A1A1D; --ink:#0B0C10; --ink-2:#171920; --ink-fg:#E9EAEE; --ink-muted:#8F94A0;
+  --ok:#4CC484; --ok-soft:#163324; --warn:#F0B34E; --warn-soft:#3A2C12; --bad:#FF7A6E; --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101116; --surface:#181A21; --sunken:#1F222A; --line:#2C3039; --fg:#ECEDF1; --muted:#A0A4AF;
+  --red:#E0323C; --red-ink:#FFFFFF; --red-soft:#3A1A1D; --ink:#0B0C10; --ink-2:#171920; --ink-fg:#E9EAEE; --ink-muted:#8F94A0;
+  --ok:#4CC484; --ok-soft:#163324; --warn:#F0B34E; --warn-soft:#3A2C12; --bad:#FF7A6E; --shadow:none; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--surface)}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100%}
+/* sidebar */
+.side{background:var(--ink);color:var(--ink-fg);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding-block:18px 14px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:12px;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 8px 18px}
+.mark{width:34px;height:34px;border-radius:7px;background:var(--red);display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:13px;letter-spacing:.02em;color:#fff}
+.brand b{font-family:var(--display);font-stretch:85%;font-weight:800;font-size:17px;letter-spacing:.01em;line-height:1.05;display:block}
+.brand small{color:var(--ink-muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav .grp{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-muted);padding:14px 10px 4px}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;text-decoration:none;color:var(--ink-fg);font-size:14px}
+.nav a svg{width:17px;height:17px;flex:none;opacity:.75}
+.nav a:hover{background:var(--ink-2)}
+.nav a[aria-current="page"]{background:var(--red);color:#fff}
+.nav a[aria-current="page"] svg{opacity:1}
+.side-foot{margin-top:auto;padding:14px 10px 0;border-top:1px solid #262A33;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-muted)}
+.avatar{width:28px;height:28px;border-radius:50%;background:#2A2E38;color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:3px;background:linear-gradient(90deg,var(--red),transparent 70%)}
+.top h1{margin:0;font-family:var(--display);font-stretch:90%;font-weight:800;font-size:18px}
+.menu-btn{display:none;background:none;border:1px solid var(--line);border-radius:8px;width:38px;height:38px;cursor:pointer}
+.state-pick{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-size:12.5px;font-weight:600}
+.state-pick button{border:0;background:none;padding:6px 12px;cursor:pointer;color:var(--muted)}
+.state-pick button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+main{padding-block:26px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+/* type */
+.ph{display:flex;flex-direction:column;gap:4px}
+.eyebrow{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);font-weight:700}
+h2.pt{margin:0;font-family:var(--display);font-stretch:88%;font-weight:850;font-size:clamp(28px,4vw,38px);line-height:1.05;text-wrap:balance}
+.lede{margin:0;color:var(--muted);max-width:62ch}
+h3.st{margin:0 0 12px;font-family:var(--display);font-stretch:92%;font-weight:750;font-size:19px;text-wrap:balance}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+/* surfaces */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.pad{padding:18px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:8px;padding:9px 14px;font-weight:600;font-size:14px;cursor:pointer;border:1px solid var(--line);background:var(--surface);text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--fg)}
+.btn.primary{background:var(--red);border-color:var(--red);color:var(--red-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:none}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.todo{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--warn);background:var(--warn-soft);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.pill{display:inline-flex;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 8px;background:var(--sunken);color:var(--muted)}
+.pill.pa{background:#E7EEFB;color:#1F4E9E}.pill.nj{background:#E9F5EF;color:#1C6B43}
+:root[data-theme="dark"] .pill.pa{background:#1B2A45;color:#9CBBF2}:root[data-theme="dark"] .pill.nj{background:#14301F;color:#86D3A8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill.pa{background:#1B2A45;color:#9CBBF2}:root:not([data-theme="light"]) .pill.nj{background:#14301F;color:#86D3A8}}
+.note{font-size:13px;color:var(--muted)}
+.empty{border:1.5px dashed var(--line);border-radius:var(--r);padding:22px;color:var(--muted);text-align:center}
+/* hero */
+.hero{border-radius:14px;padding:28px;color:#fff;background:radial-gradient(120% 140% at 0% 0%,#C8161F 0%,#8E0E19 46%,#1A1B22 100%);display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;position:relative;overflow:hidden}
+.hero::after{content:"KWRG";position:absolute;right:-10px;bottom:-34px;font-family:var(--display);font-weight:900;font-stretch:125%;font-size:140px;letter-spacing:-.02em;color:rgba(255,255,255,.06);pointer-events:none}
+.hero h2{margin:0;font-family:var(--display);font-stretch:88%;font-weight:850;font-size:clamp(28px,4.4vw,42px);line-height:1.02}
+.hero p{margin:6px 0 0;color:rgba(255,255,255,.82);max-width:48ch}
+.hero .btn{background:#fff;color:#17181C;border-color:#fff;position:relative;z-index:1}
+.hero .offices{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.hero .offices span{font-size:12px;border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:3px 10px;color:rgba(255,255,255,.9)}
+/* quick links */
+.ql{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.ql a{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 10px;text-decoration:none;text-align:center;font-weight:600;font-size:13.5px;transition:border-color .15s,transform .15s}
+.ql a:hover{border-color:var(--red);transform:translateY(-1px)}
+.ico{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--red-soft);color:var(--red)}
+.ico.alt{background:var(--sunken);color:var(--fg)}
+.ico svg{width:20px;height:20px}
+/* events */
+.ev{display:grid;grid-template-columns:56px minmax(0,1fr);gap:14px;padding:16px}
+.date{border:1px solid var(--line);border-radius:8px;text-align:center;padding:6px 0;height:max-content;background:var(--sunken)}
+.date small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.1em;color:var(--red)}
+.date b{font-family:var(--display);font-size:24px;font-weight:800;line-height:1}
+.ev h4{margin:0 0 4px;font-size:15.5px;text-wrap:balance}
+.ev .meta{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.ev p{margin:8px 0 0;font-size:13.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+/* forms */
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--muted)}
+.in{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden}
+.in:focus-within{border-color:var(--red)}
+.in span{padding:0 0 0 10px;color:var(--muted);font-size:14px}
+.in span.suf{padding:0 10px 0 0}
+.in input,.in select,input.plain,select.plain,textarea.plain{border:0;background:none;padding:9px 10px;width:100%;min-width:0;outline:none;font-size:14.5px;color:var(--fg)}
+input.plain,select.plain,textarea.plain{border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+input.plain:focus,select.plain:focus,textarea.plain:focus{border-color:var(--red)}
+.fields{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+/* stats */
+.stats{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.stat{padding:14px 16px}
+.stat small{display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stat b{display:block;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:22px;font-weight:600;margin-top:4px}
+.stat.hot{background:var(--ink);color:var(--ink-fg);border-color:var(--ink)}
+.stat.hot small{color:var(--ink-muted)}
+.stat.hot b{font-family:var(--display);font-size:40px;font-weight:850}
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{border:0;background:none;padding:10px 14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--red)}
+/* tables */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+td.r,th.r{text-align:right}
+/* budget rows */
+.brow{display:grid;grid-template-columns:minmax(0,1fr) 120px 112px 64px 96px 58px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.brow .code{font-family:var(--mono);font-size:12px;color:var(--muted);margin-right:8px}
+.brow .lbl{font-size:14px;min-width:0}
+.brow .tot{text-align:right;font-family:var(--mono);font-size:13px}
+.brow .acts{display:flex;gap:2px;justify-content:flex-end}
+.iconbtn{background:none;border:0;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;display:grid;place-items:center}
+.iconbtn:hover{color:var(--fg);background:var(--sunken)}
+.iconbtn svg{width:16px;height:16px}
+.iconbtn.on{color:var(--red)}
+.bhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.bhead .k{font-family:var(--mono);font-size:12px;color:var(--red);letter-spacing:.06em}
+.bhead h3{margin:2px 0 0;font-family:var(--display);font-stretch:92%;font-size:20px}
+.bbody{padding:4px 18px 14px}
+/* partners */
+.pc{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px;cursor:pointer;text-align:center;border:1px solid var(--line);background:var(--surface);border-radius:var(--r)}
+.pc[aria-expanded="true"]{border-color:var(--red);box-shadow:0 0 0 1px var(--red)}
+.plogo{width:100%;aspect-ratio:16/9;max-width:100%;border-radius:8px;background:var(--sunken);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:22px;color:var(--muted)}
+.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 14px;font-size:14px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;overflow-wrap:anywhere}
+.copy{background:none;border:1px solid var(--line);border-radius:6px;font-size:11.5px;padding:1px 7px;cursor:pointer;color:var(--muted);margin-left:6px}
+/* list items */
+.li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);text-decoration:none}
+.li:last-child{border-bottom:0}
+a.li:hover{background:var(--sunken)}
+.li .t{min-width:0;font-size:14px}
+/* chat */
+.chat{display:flex;flex-direction:column;gap:10px;max-height:56vh;overflow-y:auto;padding:16px}
+.msg{max-width:78%;padding:10px 14px;border-radius:12px;font-size:14.5px;white-space:pre-wrap}
+.msg.ai{background:var(--sunken);align-self:flex-start;border-bottom-left-radius:4px}
+.msg.me{background:var(--red);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.msg.coach{background:var(--ok-soft);align-self:stretch;max-width:100%;border-left:3px solid var(--ok)}
+.msg .who{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.7;margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:13.5px;font-weight:600;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.save-state{font-size:12.5px;color:var(--muted)}
+.bar{height:10px;border-radius:999px;background:var(--sunken);overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.pgrid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));align-items:start}
+.pcard{display:flex;flex-direction:column;overflow:hidden}
+.calbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.calnav{display:flex;align-items:center;gap:6px}.calnav h3{margin:0 0 0 4px;font-family:var(--display);font-size:22px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;padding:6px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.calcats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.ccat{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--fg)}
+.ccat i{width:10px;height:10px;border-radius:3px;background:var(--ec)}
+.ccat[aria-pressed="false"]{opacity:.45;text-decoration:line-through}
+.cmonth{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.cdow{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px;border-bottom:1px solid var(--line);background:var(--sunken)}
+.cday{min-height:104px;padding:4px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:3px;min-width:0}
+.cday:nth-child(7n){border-right:0}.cday.out{background:var(--sunken)}.cday.out .cdn{opacity:.45}
+.cdn{font-size:12.5px;font-weight:600;padding:2px 4px;align-self:flex-start;border-radius:999px}
+.cday.now .cdn{background:var(--red);color:#fff;padding:2px 7px}
+.cev{display:block;width:100%;text-align:left;border:0;border-left:3px solid var(--ec);background:color-mix(in srgb,var(--ec) 14%,transparent);color:var(--fg);border-radius:4px;padding:2px 5px;font:inherit;font-size:11.5px;line-height:1.3;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cev:hover{background:color-mix(in srgb,var(--ec) 26%,transparent)}
+.clist{display:flex;flex-direction:column;gap:10px}
+.cld{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;align-items:start}
+.cldate{display:flex;flex-direction:column;align-items:center;padding:6px 0;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.cldate b{font-family:var(--display);font-size:24px;line-height:1}.cldate span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.cldate.now{background:var(--red);border-color:var(--red);color:#fff}.cldate.now span{color:#fff}
+.clev{display:flex;flex-direction:column;gap:6px}
+.clrow{display:flex;gap:10px;align-items:stretch;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;font:inherit;color:inherit;cursor:pointer}
+.clrow i{width:4px;border-radius:4px;background:var(--ec);flex:none}.clrow>span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.clrow:hover{border-color:var(--ec)}
+.calpop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;z-index:70;padding:16px}
+.calpop[hidden]{display:none}
+.calpop-card{position:relative;background:var(--surface);color:var(--fg);border-radius:14px;max-width:480px;width:100%;max-height:85vh;overflow:auto;padding:22px 22px 20px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.calpop-bar{height:5px;border-radius:5px;width:56px;margin-bottom:8px}
+.calx{position:absolute;top:10px;right:10px;font-size:16px}
+@media (max-width:700px){.cday{min-height:64px}.cev{font-size:0;padding:0;height:6px;border-left:0;background:var(--ec)}.cev b{display:none}.cdow{padding:6px 2px;text-align:center}}
+.shelf{display:grid;gap:22px 18px;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));padding:18px;border-radius:var(--r);background:linear-gradient(180deg,var(--sunken),transparent 85%)}
+.book{display:flex;flex-direction:column;gap:10px;text-decoration:none;color:inherit}
+.bk-cover{position:relative;aspect-ratio:420/544;border-radius:4px 10px 10px 4px;overflow:hidden;background:#C8102E;box-shadow:inset 6px 0 8px -4px rgba(0,0,0,.35),0 2px 4px rgba(0,0,0,.12),0 10px 22px -10px rgba(0,0,0,.35);transform:rotate(var(--tilt,0deg));transition:transform .2s ease,box-shadow .2s ease}
+.bk-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.bk-cover::after{content:"";position:absolute;inset:0 auto 0 0;width:7px;background:linear-gradient(90deg,rgba(0,0,0,.28),rgba(255,255,255,.12),transparent)}
+.book:hover .bk-cover,.book:focus-visible .bk-cover{transform:translateY(-6px) rotate(0deg) scale(1.03);box-shadow:inset 6px 0 8px -4px rgba(0,0,0,.35),0 18px 30px -12px rgba(0,0,0,.45)}
+.bk-tag{position:absolute;top:8px;right:8px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:#fff;color:#111;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.bk-tag.t-start-here{background:#FFD23F}.bk-tag.t-listings{background:#7FE0C2}.bk-tag.t-leads{background:#9CC8FF}.bk-tag.t-database{background:#FFB38A}.bk-tag.t-tech{background:#D7B8FF}
+.bk-read{position:absolute;left:50%;bottom:12px;transform:translate(-50%,8px);opacity:0;display:inline-flex;align-items:center;gap:6px;background:#111;color:#fff;font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:999px;transition:all .2s ease}
+.book:hover .bk-read,.book:focus-visible .bk-read{opacity:1;transform:translate(-50%,0)}
+.bk-meta{display:flex;flex-direction:column;gap:3px}
+.bk-meta b{font-size:14.5px;line-height:1.25}
+.bk-meta .note{font-size:12.5px;line-height:1.35}
+.bk-pg{font-size:11.5px;color:var(--muted)}
+.book.more .bk-cover{background:repeating-linear-gradient(135deg,#1d1f24 0 12px,#24272d 12px 24px);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:14px;border:2px dashed rgba(255,255,255,.35)}
+.book.more .bk-cover b{font-family:var(--display);font-size:19px;line-height:1.1}
+.bk-plus{width:44px;height:44px;border-radius:50%;background:#C8102E;display:grid;place-items:center;font-size:28px;font-weight:700;line-height:1}
+@media (prefers-reduced-motion:reduce){.bk-cover,.bk-read{transition:none}.book:hover .bk-cover{transform:none}}
+@media (max-width:520px){.shelf{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px;gap:18px 12px}}
+.pbrand .pill.tier{font-weight:700}
+.pcat{grid-column:1/-1;margin:10px 0 -4px;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:6px}
+.pcat:first-child{margin-top:0}
+.pbrand .pill.tier-platinum{background:#e7e9ee;color:#2b3140}
+.pbrand .pill.tier-silver{background:#eef0f2;color:#4a525c}
+.pbrand .pill.tier-bronze{background:#f6e7d8;color:#7a4a1e}
+.phead{display:grid;grid-template-columns:76px minmax(0,1fr);gap:14px;align-items:center;padding:16px 16px 14px;border-bottom:1px solid var(--line)}
+.pimg{width:76px;height:76px;border-radius:50%;object-fit:cover;background:var(--sunken);display:block}
+.pimg.logo{border-radius:12px;background:#fff;border:1px solid var(--line);object-fit:contain;padding:4px}
+.pimg.ph{display:grid;place-items:center;background:var(--red-soft);color:var(--red)}
+.pimg.ph svg{width:32px;height:32px}
+.pbrand{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;background:#fff;border-bottom:1px solid var(--line);min-height:62px}
+.pbrand img{height:42px;width:auto;max-width:65%;object-fit:contain;display:block}
+.pbrand b{color:#17181C}
+.pbrand .pill{background:#F1F2F4;color:#5D616B}
+.ptype{margin-bottom:4px}
+.pname{margin:0;font-family:var(--display);font-stretch:92%;font-weight:750;font-size:19px;line-height:1.15;text-wrap:balance}
+.pco{font-size:13px;color:var(--muted);margin-top:2px}
+.pco b{color:var(--fg);font-weight:600}
+.pbody{display:flex;flex-direction:column;gap:2px;padding:10px 16px}
+.prow{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:5px 0;font-size:14px}
+.prow .pk{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.prow .pv{overflow-wrap:anywhere}
+.prow .copy{margin:0}
+.psite{margin:4px 16px 16px;align-self:flex-start}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.scrim{display:none}
+.docv{position:fixed;inset:0;z-index:80;background:rgba(10,11,14,.72);display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.docv-bar{display:flex;align-items:center;gap:10px;background:var(--surface);border-bottom:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-left,0px))}
+.docv-t{flex:1;min-width:0;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.docv-n{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.docv-body{flex:1;overflow:auto;display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px}
+.docv-page{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.35);max-width:100%;height:auto}
+.docv-img{background:#fff;border-radius:10px;padding:24px;max-width:100%}
+.docv-img img{max-width:min(720px,100%);max-height:70vh;display:block}
+.docv-msg{margin:auto;color:#fff;background:rgba(0,0,0,.4);padding:14px 18px;border-radius:10px;max-width:46ch;text-align:center}
+.vs{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.vs-card{position:relative;display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);text-decoration:none;min-height:150px;transition:border-color .15s,transform .15s}
+a.vs-card:hover{border-color:var(--red);transform:translateY(-1px)}
+.vs-card .vs-n{font-family:var(--display);font-weight:900;font-stretch:110%;font-size:34px;line-height:1;color:var(--red)}
+.vs-card.soon .vs-n{color:var(--muted)}
+.vs-play{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--red);color:#fff}
+.vs-play svg{width:16px;height:16px}
+.vs-card.soon .vs-play{background:var(--sunken);color:var(--muted)}
+.vs-t{font-size:14.5px;line-height:1.3;text-wrap:balance}
+.vs-s{margin-top:auto;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--red)}
+.vs-card.soon .vs-s{color:var(--muted)}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;left:0;top:0;bottom:0;width:260px;z-index:50;transform:translateX(-100%);transition:transform .2s;padding-top:calc(18px + env(safe-area-inset-top,0px))}
+  .app.open .side{transform:none}
+  .app.open .scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:45}
+  .menu-btn{display:grid;place-items:center}
+  .brow{grid-template-columns:minmax(0,1fr) 100px 96px;row-gap:4px}
+  .brow .lbl{grid-column:1/-1}
+  .brow .due,.brow .tot{}
+  .msg{max-width:90%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app" id="app">
+  <aside class="side" id="side" aria-label="Main navigation">
+    <div class="brand"><div class="mark">KW</div><div><b>KWRG Agent Hub</b><small>PA · NJ</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot"><div class="avatar" id="av">·</div><span id="whoName">Agent</span></div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <div style="min-width:0">
+    <header class="top">
+      <button class="menu-btn" id="menuBtn" aria-label="Open menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <h1 id="topTitle">KWRG Agent Hub</h1>
+      <div class="state-pick" role="group" aria-label="Office state">
+        <button data-st="ALL" aria-pressed="true">Both</button><button data-st="PA" aria-pressed="false">PA</button><button data-st="NJ" aria-pressed="false">NJ</button>
+      </div>
+    </header>
+    <main><div class="wrap" id="view"></div></main>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* =====================================================================
+   CONTENT — everything the brokerage supplies lives here.
+   Any item with url:"" shows a "Link needed" tag and appears on the
+   Setup checklist (visible to hub editors on the Hub page).
+   ===================================================================== */
+const CONTENT = {
+  offices: [
+    {id:"pa", state:"PA", name:"Keller Williams Realty Group", short:"KW Realty Group · Collegeville", mc:"Market Center #275",
+     address:"400 Arcola Rd, Suite A5, Collegeville, PA 19426", phone:"610-792-5900", fax:"", mls:"", license:"RB065106", hours:"Admin staff 8 AM – 5 PM · Agents have 24/7 badge access", logo:"files/10841bbea7cabb929a26b61d2951a363.png"},
+    {id:"nj", state:"NJ", name:"Keller Williams Realty Group AC", short:"KW Realty Group AC · Atlantic City", mc:"",
+     address:"3103 Boardwalk, Atlantic City, NJ 08401", phone:"609-318-6636", fax:"", mls:"", license:"2568190", hours:"Office 10 AM – 3 PM · Agents after hours via lockbox, code 9120", logo:"files/4059712d5f6688dcaacf86c7bbcc33f6.png"}
+  ],
+  wifi: [ {location:"Collegeville office", network:"Keller Williams", password:"Agent@wifi"}, {location:"Atlantic City office", network:"keller_3103", password:"terese67"} ],
+  brokers: [
+    {name:"Terese Brittingham", role:"Broker / Owner · Operating Principal", scope:"PA & NJ", phone:"610-212-0848", email:"teresekw@gmail.com"},
+    {name:"Thomas McCouch", role:"Owner", scope:"PA", phone:"610-574-9272", email:"mccouch7@gmail.com"}
+  ],
+  leadership: [
+    {name:"Marisa McLaughlin", role:"Team Leader", phone:"484-802-9801", email:"marisa.mclaughlin@kw.com"},
+    {name:"Dan Carroll", role:"Market Center Administrator", phone:"", email:"danielcarrollkw@gmail.com"},
+    {name:"Miranda Bildstein", role:"Director of Agent Services · Lunch & Learn · signs, riders, lockboxes & supplies", phone:"", email:"mirandabildstein@kw.com"},
+    {name:"Eileen Campbell", role:"Compliance", phone:"610-256-9620", email:"ecampbell@kw.com"},
+    {name:"Hope Sencer", role:"Director of Productivity Coaching", phone:"484-925-7931", email:"hsencer@kw.com"},
+    {name:"Cameron Heron", role:"Director of First Impressions · conference room booking", scope:"PA · Collegeville", phone:"", email:"frontdesk275@kw.com"},
+    {name:"Mary Janco", role:"Director of First Impressions", scope:"NJ · Atlantic City", phone:"267-597-7559", email:"marycarmenkw@gmail.com"},
+    {name:"Rizzo", role:"Media Director · social & video", phone:"", email:"kwlivetv@gmail.com"}
+  ],
+  faq: [
+    {q:"Who do I call with a compliance question?", a:"Eileen Campbell handles compliance — 610-256-9620, ecampbell@kw.com."},
+    {q:"Who do I ask about a contract question?", a:"Contract questions go to your team leader."},
+    {q:"How do I submit a new listing or pending deal?", a:""},
+    {q:"Where do I order signs, riders, lockboxes and other supplies?", a:"Miranda Bildstein handles ordering signs, riders, lockboxes and other REALTOR® supplies — mirandabildstein@kw.com."},
+    {q:"How do I book a conference room?", a:"Contact Cameron Heron at the front desk — frontdesk275@kw.com."}
+  ],
+  marketing: {
+    canva:"https://canva.kw.com/",
+    assets: [
+      {name:"All Offices", dark:"", light:""},
+      {name:"KW Realty Group (PA)", dark:"", light:"files/10841bbea7cabb929a26b61d2951a363.png"},
+      {name:"KW Realty Group AC (NJ)", dark:"", light:"files/4059712d5f6688dcaacf86c7bbcc33f6.png"},
+      {name:"KW Luxury", dark:"files/36bc03d9fe8820237412e81015c91151.svg", light:"files/930d88571df6d6e0a240ae26d8aa4716.svg"},
+      {name:"Rising Stars", dark:"", light:""}
+    ],
+    extras:[ {name:"Internal Facebook group (agents only)", url:"https://www.facebook.com/groups/1736178313320788"}, {name:"Public Facebook page — PA (KW Realty Group)", url:"https://www.facebook.com/kwrealtygroup"}, {name:"Public Facebook page — NJ (KW Realty Group AC)", url:"https://www.facebook.com/KWRealtyGroupAC"}, {name:"Instagram — PA (@kwcollegeville)", url:"https://www.instagram.com/kwcollegeville/"}, {name:"YouTube — KWLIVETV", url:"https://www.youtube.com/c/KWLIVETV/live"} ]
+  },
+  formsTop: [
+    {name:"Lone Wolf Transact login", url:"https://transact-workflow.lwolf.com/"},
+    {name:"Lone Wolf Transact training", url:"https://community.lwolf.com/s/manage-transaction-resources"},
+    {name:"Training calendar", url:"https://teamup.com/kscvjh8rbpta7siv4e"},
+    {name:"PA license renewal", url:"https://www.pals.pa.gov/#!/page/login"},
+    {name:"NJ license renewal", url:"https://www-dobi.nj.gov/DOBI_RELOLSRV/LicenseServices"}
+  ],
+  formCats: [
+    {id:"seller", name:"Seller Forms", icon:"home"},
+    {id:"buyer", name:"Buyer Forms", icon:"key"},
+    {id:"rental", name:"Rental Forms", icon:"doc"},
+    {id:"other", name:"Additional Forms", icon:"folder"},
+    {id:"office", name:"Office & Compliance", icon:"shield"}
+  ],
+  forms: [
+    {cat:"seller", st:"PA", name:"Listing Contract — Exclusive Right to Sell (XLS)", url:"files/4a5393c07b7d49eebfd2553e6378e0a4.pdf"},
+    {cat:"seller", st:"PA", name:"★ Sellers Shield — preferred way to send the SPD & Lead-Based Paint Disclosure to sellers (create / log in)", url:"https://protect3.sellersshield.com/auth"},
+    {cat:"seller", st:"PA", name:"Seller's Property Disclosure Statement (SPD) — paper copy; send through Sellers Shield when possible", url:"files/0c3281d1f5870ddd27f902b24db6c33d.pdf"},
+    {cat:"seller", st:"PA", name:"Consumer Notice (CN)", url:"files/c49e093dd7f9a674151c2590eb98beb6.pdf"},
+    {cat:"seller", st:"PA", name:"Seller's Estimated Closing Costs", url:"files/5764ba6ff91bdb2875f1f2ef3d76f213.pdf"},
+    {cat:"seller", st:"PA", name:"Lockbox & Showing Addendum", url:"files/6d526beabf60fd4e6a914f19ffcca8bc.pdf"},
+    {cat:"seller", st:"NJ", name:"Seller's Estimated Closing Costs", url:"files/5db763ea41f1fdb507ad2b968ed52cd0.pdf"},
+    {cat:"seller", st:"NJ", name:"Lockbox & Showing Addendum", url:"files/5074474c3862cca39b58da7c4a37ffa9.pdf"},
+    {cat:"seller", st:"NJ", name:"Mortgage Payoff Authorization", url:"files/9edbb0f8037c110ad96c5b33016fb7ac.pdf"},
+    {cat:"seller", st:"NJ", name:"HOA / Condo Association Information — seller (resale package)", url:"files/91d365ed8b655feb43d1794dc06b16e1.pdf"},
+    {cat:"buyer", st:"NJ", name:"HOA / Condo Association Information — buyer (resale package)", url:"files/73c1848b23e3eaffe5b11d032cabcdba.pdf"},
+    {cat:"seller", st:"PA", name:"HOA / Condo Association Information — seller (resale package)", url:"files/0f0524877d0a0769bf28de6d6e8dd4ce.pdf"},
+    {cat:"seller", st:"PA", name:"Mortgage Payoff Authorization", url:"files/e615ac61541976fff2c6392792870a64.pdf"},
+    {cat:"other", st:"PA", name:"Home Warranty Offer (buyer or seller)", url:"files/13db81d335cd1e277025b356593d7b49.pdf"},
+    {cat:"seller", st:"NJ", name:"Conveyancing Request Form", url:"files/ce044afa687856756a447ac09e6f69cd.pdf"},
+    {cat:"other", st:"NJ", name:"Home Warranty Offer (buyer or seller)", url:"files/12104a73dfd1910e185089401bda7e1e.pdf"},
+    {cat:"seller", st:"NJ", name:"Residential Listing Agreement — Sale/Lease", url:"files/2f9c45ba90b5703f40c3c758d5d6da0f.pdf"},
+    {cat:"rental", st:"NJ", name:"Exclusive Tenant Agency Agreement", url:"files/305778d75b6a3fede46ac7c86e63a741.pdf"},
+    {cat:"rental", st:"NJ", name:"Non-Exclusive Tenant Agency Agreement", url:"files/469d21b588f653a3413a99423b8d0c1f.pdf"},
+    {cat:"rental", st:"NJ", name:"Informed Consent to Dual Agency (Tenant)", url:"files/2b3378b516c9741ef5f21c672f43f3e1.pdf"},
+    {cat:"seller", st:"NJ", name:"Seller's Property Condition Disclosure Statement", url:"files/b874a292330cf54e5f078677bfc309cc.pdf"},
+    {cat:"seller", st:"NJ", name:"Consumer Information Statement (CIS)", url:"files/520bdb9bb91759c2c2807007f9af6995.pdf"},
+    {cat:"buyer", st:"NJ", name:"Consumer Information Statement (CIS)", url:"files/520bdb9bb91759c2c2807007f9af6995.pdf"},
+    {cat:"buyer", st:"NJ", name:"Buyers' Waiver of Inspection and/or Appraisal", url:"files/2bffbe619390c65ac7fe0f5901e56d2c.pdf"},
+    {cat:"other", st:"NJ", name:"Addendum Regarding Underground Fuel Tank(s)", url:"files/eb72d26834db01860906fa8912ded820.pdf"},
+    {cat:"seller", st:"NJ", name:"Informed Consent to Dual Agency (Seller)", url:"files/352998cef3f6d7a35de8efdaaf0980e3.pdf"},
+    {cat:"seller", st:"NJ", name:"Lead-Based Paint Disclosure", url:"files/ab8e47128ad404f07d4bf0dae5115e3d.pdf"},
+    {cat:"rental", st:"NJ", name:"Informed Consent to Dual Agency (Landlord)", url:"files/6593099924dbb5f90f87835487d377f1.pdf"},
+    {cat:"other", st:"NJ", name:"OPRA Notice to Buyers and Sellers", url:"files/f0bffb83c2ec045fedf4543c735db08e.pdf"},
+    {cat:"seller", st:"PA", name:"Open House Sign-In Sheet", url:"files/6a9244d114dc5db88a8bcd94f580d8d2.pdf"},
+    {cat:"seller", st:"NJ", name:"Open House Sign-In Sheet", url:"files/2297a31f44fc98cf8e59d6e85bbaaccb.pdf"},
+    {cat:"buyer", st:"PA", name:"Consumer Notice (CN)", url:"files/c49e093dd7f9a674151c2590eb98beb6.pdf"},
+    {cat:"buyer", st:"PA", name:"Exclusive Buyer Agency Contract (BAC)", url:"files/e2ee39c6b1306cccc22d3661b3cea340.pdf"},
+    {cat:"buyer", st:"PA", name:"Standard Agreement for the Sale of Real Estate (ASR)", url:"files/d9eda2b0e70d5c55f88399ddbdd2c311.pdf"},
+    {cat:"buyer", st:"PA", name:"Buyer's Financial Information (BFI)", url:"files/b6616f3072277ef51fab546b66e6c4fd.pdf"},
+    {cat:"buyer", st:"PA", name:"Buyer's Estimated Costs (BEC)", url:"files/1645990cde883cc3f386d6626d57dfb9.pdf"},
+    {cat:"buyer", st:"PA", name:"Deposit Money Notice to Buyer (DMN)", url:"files/6746aeb101f6afdf92c7fde55b68cb71.pdf"},
+    {cat:"buyer", st:"PA", name:"For Your Protection: Get a Home Inspection", url:"files/37e311d81b8e38c4362bd6c99f486cd5.pdf"},
+    {cat:"buyer", st:"PA", name:"Buyer's Reply to Inspections / Corrective Proposal (BRI)", url:"files/553f745f029524cde6ad659760365887.pdf"},
+    {cat:"buyer", st:"PA", name:"Pre-Settlement Walkthrough Report (PSW)", url:"files/3b982e973baffd9a02771046c8281ad6.pdf"},
+    {cat:"buyer", st:"PA", name:"Farmers Home Insurance Proposal (Shawn Turner)", url:"files/178ab53af197f10d5b9a62d3ddb3bf17.pdf"},
+    {cat:"buyer", st:"NJ", name:"Exclusive Buyer Agency Agreement", url:"files/8fe234f7c40850892c492ee1127176d0.pdf"},
+    {cat:"buyer", st:"NJ", name:"Contract of Sale (with Attorney General Opinion 26 notice)", url:"files/e98fe5a3fae370d601a8d1a5d24d5c3d.pdf"},
+    {cat:"rental", st:"PA", name:"Residential Lease (RL)", url:"files/ba3cc86c9908f3cf570dd9bf6adcdbc0.pdf"},
+    {cat:"rental", st:"PA", name:"Pet Addendum to Residential Lease (PAL)", url:"files/efa7d3178293e5b53d0f55ae240bd6ab.pdf"},
+    {cat:"rental", st:"PA", name:"Tenant's Move-Out Notice (TMN)", url:"files/3f041d209d2a13240953ce03e6b787e0.pdf"},
+    {cat:"rental", st:"PA", name:"Exclusive Tenant Agency Contract (TAC)", url:"files/02fcccf2797dabe1f911b444e2823523.pdf"},
+    {cat:"buyer", st:"PA", name:"Non-Exclusive Buyer Agency Contract (NBA)", url:"files/97519f4497a30fcdb5de55c3dbdd8696.pdf"},
+    {cat:"other", st:"PA", name:"Tenant-Occupied Property Addendum to Agreement of Sale (TOP)", url:"files/faeb2ceb982b47573f0cc824f7e395c3.pdf"},
+    {cat:"other", st:"PA", name:"Agreement of Sale Release & Distribution of Deposit Money (AREL)", url:"files/2d01a6c319abc166a1b6c24e597537d5.pdf"},
+    {cat:"rental", st:"NJ", name:"Residential Lease Application", url:"files/9b85466aba4d2eca29be39a552df9f92.pdf"},
+    {cat:"rental", st:"PA", name:"Rental Application (RA)", url:"files/a953c6b4c162aa0f75b0f8e9a2052623.pdf"},
+    {cat:"rental", st:"BOTH", name:"Set up your RentSpree account (KW Realty Group)", url:"https://www.rentspree.com/kwrealtygroup"},
+    {cat:"other", st:"NJ", name:"Wire Fraud Notice", url:"files/6502fc68c9aebdeb6debe5ac62df82de.pdf"},
+    {cat:"other", st:"PA", name:"Wire Fraud Notice (WFN)", url:"files/d80f4d17203a7c59aa95c5b514598415.pdf"},
+    {cat:"other", st:"BOTH", name:"America's Preferred Home Warranty — consultation flyer (QR code)", url:"files/500a1365b8d615b06432529fe86dc68a.pdf"},
+    {cat:"other", st:"BOTH", name:"Protect Your Family From Lead in Your Home (EPA brochure)", url:"files/ac5164daac9e20f0c4fe738374777725.pdf"},
+    {cat:"other", st:"PA", name:"Price Escalation Addendum to Agreement of Sale (PEA)", url:"files/47f3a77517d7c45b3ff2f84ac0e48b75.pdf"},
+    {cat:"other", st:"PA", name:"Dual Agency Form", url:"files/784df26fdefbec28ba87065e0b134a98.pdf"},
+    {cat:"other", st:"PA", name:"Cooperating Broker Compensation Agreement (CBC)", url:"files/6069736fd876e1a883cf4b9bdf67d7f1.pdf"},
+    {cat:"other", st:"PA", name:"KWRG Consumer Disclosure Packet (affiliated business)", url:"files/61550c89a8aaae488c76ca8c4fc60757.pdf"},
+    {cat:"other", st:"PA", name:"PA Additional Commission Form", url:"files/6f6b0785e5e58cfffced8717cb0de8c4.pdf"},
+    {cat:"other", st:"NJ", name:"Transaction Disclosures & Authorizations (affiliated business)", url:"files/eb06b11d0e8e98f314822428af456ac8.pdf"},
+    {cat:"office", st:"NJ", name:"Buyer & Seller Compliance Checklist", url:"files/5b66a3d13123cafe9f838f64592240ba.pdf"},
+    {cat:"other", st:"NJ", name:"NJ Additional Commission Form", url:"files/0042577060bcc03752921ee2e830af57.pdf"},
+    {cat:"office", st:"PA", name:"Referral Agreement (REF)", url:"files/889a091a349835cf9b666b38c9641b9c.pdf"},
+    {cat:"office", st:"BOTH", name:"KWRG W-9", url:""},
+    {cat:"office", st:"BOTH", name:"Direct Deposit Update", url:""},
+    {cat:"office", st:"BOTH", name:"E&O Insurance Certificate", url:""}
+  ],
+  training: [
+    {name:"KWRG training schedule", desc:"Weekly classes, Lunch & Learns and coaching sessions.", url:"https://teamup.com/kscvjh8rbpta7siv4e"},
+    {name:"Connect Lone Wolf Transact to Command", desc:"Create your Lone Wolf Transact account and link it inside KW Command.", url:"https://answers.kw.com/hc/en-us/articles/48891055092499-Create-Connect-Your-Lone-Wolf-Transact-Account-in-Command"},
+    {name:"Lone Wolf Transact & Command workflow", desc:"How a transaction moves between Lone Wolf Transact and Command, step by step.", url:"https://answers.kw.com/hc/en-us/articles/49176410572435-Lone-Wolf-Transact-and-Command-Workflow"},
+    {name:"KW Command", desc:"Contacts, SmartPlans, Opportunities and Designs.", url:"https://console.command.kw.com/"},
+    {name:"KW Connect", desc:"KW's on-demand training library.", url:"https://kwconnect.kw.com/"},
+    {name:"SLM Platform (Scott LeRoy Marketing)", desc:"KW marketing and training resources from Scott LeRoy Marketing. Passcode: 275", url:"https://scottleroymarketing.com/kw-resources-login/"},
+    {name:"Sellers Shield (PA)", desc:"Our preferred way for PA sellers to complete the Seller's Property Disclosure (SPD) and Lead-Based Paint Disclosure. Create your account or log in, then send the disclosures to your seller.", url:"https://protect3.sellersshield.com/auth"},
+    {name:"Earnnest — digital earnest money", desc:"KW's partner for collecting earnest money electronically, right inside Command. Request and receive deposits from buyers securely, cutting down on checks, failed payments and wire fraud.", url:"https://earnnest.com/partners/keller-williams"},
+    {name:"RPR — Realtors Property Resource", desc:"NAR's free property data, valuation and market report tool for REALTORS. New agents: set up your Bright MLS account first, then sign in to RPR with your NAR/Bright credentials.", url:"https://www.narrpr.com/"},
+    {name:"RentSpree account setup", desc:"Create your RentSpree account through KW Realty Group for rental applications and tenant screening.", url:"https://www.rentspree.com/kwrealtygroup"},
+    {name:"Bright MLS training", desc:"Upcoming Bright MLS webinars — search, CMA and listing input classes.", url:"https://www.brightmls.com/article/upcoming-webinars"}
+  ],
+  trainingVideos: [
+    {name:"KWLIVETV — our YouTube channel", desc:"Live trainings, replays and market center videos from KW Realty Group.", url:"https://www.youtube.com/c/KWLIVETV/live"},
+    {name:"Command / Lone Wolf FAQ", desc:"KW Connect video library answering common Command and Lone Wolf questions.", url:"https://console.command.kw.com/connect/learning/categories/assets/28265"},
+    {name:"🎙️ The Best of The Best Podcast — with Terese Brittingham", desc:"Our broker's weekly podcast: Terese talks with the best of the best in every business about the secrets to their success. Listen on Apple Podcasts.", url:"https://podcasts.apple.com/us/podcast/the-best-of-the-best/id1704472129"}
+  ],
+  associations: [
+    {name:"National Association of REALTORS®", short:"NAR", level:"National", st:"BOTH", url:"https://www.nar.realtor/", desc:"Code of Ethics, national policy and research, member benefits and the REALTOR® brand rules.", tags:["Code of Ethics","Research & data","Member benefits"]},
+    {name:"Pennsylvania Association of REALTORS®", short:"PAR", level:"State", st:"PA", url:"https://www.parealtors.org/", desc:"PA standard forms, the legal hotline, state legislative updates and continuing education.", tags:["Standard forms","Legal hotline","PA CE"]},
+    {name:"Tri-County Suburban REALTORS®", short:"TCSR", level:"Local", st:"PA", url:"https://tcsr.realtor/", desc:"Local association for Chester, Delaware and Montgomery counties — dues, classes, monthly market stats and events.", tags:["Dues","Market stats","Classes & events"], phone:"610-560-4800", address:"1 Country View Rd, Suite 201, Malvern, PA 19355"},
+    {name:"Suburban REALTORS® Alliance", short:"SRA", level:"Local advocacy", st:"PA", url:"https://www.suburbanrealtorsalliance.com/", desc:"Local government advocacy and the municipal database — check township resale, U&O and point-of-sale inspection requirements before closing.", tags:["Municipal database","Resale / U&O rules","Advocacy"]},
+    {name:"New Jersey REALTORS®", short:"NJR", level:"State", st:"NJ", url:"https://www.njrealtor.com/", desc:"NJ standard forms, continuing education rules, advertising regulations and statewide market data.", tags:["Standard forms","NJ CE","Advertising rules"],
+      links:[{name:"Online forms (zipForm)",url:"https://www.njrealtor.com/zipform/"},{name:"CE requirements",url:"https://www.njrealtor.com/education/continuing-education/"},{name:"Advertising rules & regulations",url:"https://www.njrealtor.com/government-affairs/advertising-rules-and-real-estate-regulations/"},{name:"Market statistics",url:"https://www.njrealtor.com/research/10k/"}]},
+    {name:"Atlantic City & County Board of REALTORS®", short:"ACCBR", level:"Local", st:"NJ", url:"https://acrealestate.org/", desc:"Local board for Atlantic County — MLS access, dues, ethics and arbitration, classes, municipal info and local market stats.", tags:["MLS","Dues","Municipal info"], phone:"609-652-8486", address:"6429 East Black Horse Pike, Egg Harbor Township, NJ 08234",
+      links:[{name:"Paragon MLS login (South Jersey Shore Regional MLS)",url:"https://sjsr.paragonrels.com/ParagonLS/Default.mvc/Login"},{name:"Pay dues",url:"https://atci.rapams.com/scripts/mgrqispi.dll?APPNAME=IMS&PRGNAME=IMSMemberLogin&ARGUMENTS=-AACBR"},{name:"Calendar of events",url:"https://acrealestate.org/calendar/"},{name:"Municipalities",url:"https://acrealestate.org/municipality/"},{name:"Housing statistics",url:"https://acrealestate.org/housing-stats/"},{name:"CE courses (The CE Shop)",url:"http://acrealestate.theceshop.com/online-education/new-jersey/real-estate/broker-broker-sales-salesperson/continuing-education/courses.html"}]},
+    {name:"Cape May County Association of REALTORS®", short:"CMCAR", level:"Local", st:"NJ", url:"https://cmcar.org/", desc:"Local board for Cape May County — Strathmere and Sea Isle down through Avalon, Stone Harbor, the Wildwoods and Cape May. Runs its own MLS (CMCMLS).", tags:["CMCMLS","Events","Market info"], phone:"609-624-3500",
+      links:[{name:"Calendar & events",url:"https://cmcar.org/calendar.php"},{name:"Market information",url:"https://cmcar.org/marketinformation.php"},{name:"Membership applications",url:"https://cmcar.org/forms.php"}]},
+    {name:"Bright MLS", short:"BRIGHT", level:"MLS", st:"BOTH", url:"https://www.brightmls.com/", desc:"The MLS for our Pennsylvania market and many South Jersey agents — listings, CMAs, showing data and training.", tags:["Listings & CMAs","Training"],
+      links:[{name:"Bright MLS login",url:"https://login.brightmls.com/login"},{name:"Upcoming Bright webinars",url:"https://www.brightmls.com/article/upcoming-webinars"}]},
+    {name:"NJ Real Estate Commission", short:"NJREC", level:"Licensing", st:"NJ", url:"https://www.nj.gov/dobi/division_rec/", desc:"The state regulator — license renewal, license lookups and continuing education tracking for NJ licensees.", tags:["License renewal","CE tracking"],
+      links:[{name:"License services / renewal",url:"https://www-dobi.nj.gov/DOBI_RELOLSRV/LicenseServices"},{name:"CE credit lookup (PSI)",url:"http://njrece.psiexams.com/Account/Login"}]}
+  ],
+  playbooks: [
+    {name:"KW Codebook — Agent Edition", desc:"The MREA models and systems in one guide: lead generation, conversion, database and business planning.", cover:"files/3b01db33dd544ac4021f7a9f63a76e79.jpg", tag:"Start here", pages:53, url:"files/b50e3193f7b12ffc37fbe5d8b19d43df.pdf"},
+    {name:"Marketing Your Listing", desc:"Step-by-step listing marketing in Command: pre-market, launch, and keeping momentum.", cover:"files/d0c37d24633b8dcd95fde67c2125cfb1.jpg", tag:"Listings", pages:51, url:"files/cd5a729d2c820428a9d7b6f227089419.pdf"},
+    {name:"Listing Marketing Audit", desc:"One-page checklist to audit every listing's marketing from pre-market to momentum.", cover:"files/f109e2dca6d9a55e22a96c5c8af74e1e.jpg", tag:"Listings", pages:1, url:"files/4eb05a83c3d5946a3481341109b542d4.pdf"},
+    {name:"Online Leads", desc:"Capture, respond to and convert online leads using Command.", cover:"files/3aa311498648dd7c0b805bd6c271d0c3.jpg", tag:"Leads", pages:36, url:"files/7534172cacf9a220031fb6ee11bc12e2.pdf"},
+    {name:"Contacts", desc:"Add, organize and work your contacts in Command.", cover:"files/3ef9c944fa0a4f2bf98fbf4e0bdd380c.jpg", tag:"Database", pages:12, url:"files/c1fa9269343de7e465ce7f0bee802bcc.pdf"},
+    {name:"Database Assessment", desc:"Grade and clean up your database so you know who to call first.", cover:"files/be0f78511d7761955b25deb54f3617b1.jpg", tag:"Database", pages:16, url:"files/3315e74fded0932571021172bab584e9.pdf"},
+    {name:"AI — Large Language Models", desc:"How to use AI tools safely and effectively in your real estate business.", cover:"files/3442d8699665eea99d4fbaa0f323f4f5.jpg", tag:"Tech", pages:32, url:"files/d760962a41de271dbef6319cfd2938d3.pdf"},
+    {name:"More on KW Connect", desc:"Log in to Command to open this KW Connect learning collection.", url:"https://console.command.kw.com/connect/learning/categories/assets/29689", ext:true}
+  ],
+  quickRef: {
+    pdf:"files/5a9459d42b83da5a05d467581e6515ff.pdf",
+    steps:[["Contact","Create or locate the client contact with complete info (name, email, phone)."],["Opportunity","Create an opportunity, select transaction type, add property address and deal details."],["Documents","Upload or generate all required documents. Verify green checkmarks on every item."],["Sync","Click “Sync to Transact” and confirm the “Synced” badge. Verify data in Transact."],["Transact","Manage signatures, track deadlines, update milestones, and close the transaction."]],
+    remember:["Always search for existing contacts before creating new ones","Double-check transaction type before saving an opportunity","Name files clearly: LastName_DocType_Year.pdf","Verify sync status after every sync — check both Command and Transact","Complete all required fields at the Opportunity stage for a smooth sync"],
+    logins:[{name:"KW Command",url:"https://console.command.kw.com/"},{name:"KW Answers",url:"https://answers.kw.com/"},{name:"Lone Wolf Support",url:"https://community.lwolf.com/"},{name:"Phone Support",phone:""}],
+    deadline:"DocuSign transition ended July 14, 2026. All agents must use Lone Wolf Transact. Download any documents still in DocuSign and store them locally or in cloud storage of your choice.",
+    types:{cols:["Buyer","Seller","Lease"],rows:[["Contact required","✓","✓","✓"],["Sale price","✓","✓","Rent"],["Listing agreement","—","✓","—"],["Buyer rep agreement","✓","—","—"],["Lease agreement","—","—","✓"]]}
+  },
+  trainingCalendar: "https://teamup.com/kscvjh8rbpta7siv4e",
+  trainingSeries: [
+    {name:"Getting started with KW Command", url:""},
+    {name:"Understanding the Transaction Pipeline", url:""},
+    {name:"Setting up your first Opportunity", url:""},
+    {name:"Syncing with Lone Wolf Transact", url:""},
+    {name:"Fixing Common Sync Errors", url:""},
+    {name:"Advanced Document Management", url:""},
+    {name:"Automating Follow-ups with SmartPlans", url:""},
+    {name:"Top 10 Workflow Shortcuts", url:""},
+    {name:"TBD", url:""}
+  ],
+  partners: [
+    {name:"HomeTeam Inspection Service", tier:"Platinum", img:"files/8e03e5f0fa7a3ccb83fdd5350efb3579.jpg", logo:true, type:"Inspection", contact:"Mike Foglia", title:"Tri-County Area PA · home, radon, mold, termite, septic & water testing", phones:[{label:"Direct",n:"484-451-8236"},{label:"Office",n:"(484) 450-8052"}], email:"mfoglia@hometeam.com", site:"https://hometeam.com/tri-county-area-pa/", address:"", actions:[]},
+    {name:"Suncrest Hospice", tier:"Platinum", img:"files/9cd44ae9b25e864004300a2887230ff6.png", logo:true, type:"Hospice & home health", contact:"Susanna Koppany", title:"Hospice and home health care for clients and their families", phones:[{label:"Direct",n:"610-416-7272"}], email:"SKoppany@suncrest.com", site:"https://www.suncrestcare.com/", address:"", actions:[]},
+    {name:"Pro Home Restorations, Inc", tier:"Silver", img:"files/a2df59c3d7adcaf22b5bc6a6e5c7464b.png", logo:true, type:"Restoration", contact:"Andrew Hohorst", title:"Mold remediation & water damage restoration · Philadelphia suburbs", phones:[{label:"Direct",n:"484-948-7710"}], email:"andrew@prohomerestorations.com", site:"https://www.prohomerestorations.com/", address:"", actions:[]},
+    {name:"The Ave", tier:"Silver", img:"files/9d26dda7e9eff3587ff063551e84fe79.png", logo:true, type:"Apartments", contact:"Bob Hickey", title:"AVE Living · flexible-stay & extended-stay apartments for clients between homes", phones:[{label:"Direct",n:"267-366-8126"}], email:"Bob.Hickey@aveliving.com", site:"https://www.aveliving.com/", address:"", actions:[]},
+    {name:"360 Painting", tier:"Bronze", img:"files/76a16fe7824d81033193a46b40e4547e.png", logo:true, type:"Painting", contact:"Ted Lessick", title:"Interior and exterior painting", phones:[{label:"Direct",n:"484-356-4324"}], email:"tlessick@360painting.com", site:"https://www.360painting.com/", address:"", actions:[]},
+    {name:"KP Abstract", img:"files/d2b18493d09a5f9c42300a282a638b29.jpg", logo:true, type:"Title", contact:"KP Abstract", title:"Title & settlement · 1031 exchanges · commercial", phones:[{label:"Office",n:"(484) 463-0080"}], email:"", site:"https://kpabstract.com/home-239535", address:"400 Arcola Road, Suite A5, Collegeville, PA 19426", actions:[]},
+    {name:"Rate", img:"files/e28b7e65669b7d64751df31aa69bf7c9.jpg", brand:"files/3ce83f62615879368c06631bfc58b632.png", type:"Lender", contact:"Adam Waldman", title:"Associate VP of Mortgage Lending · NMLS #65131", phones:[{label:"Office",n:"(267) 983-6190"},{label:"Cell",n:"(484) 686-7529"}], email:"adam.waldman@rate.com", site:"https://www.rate.com/loan-officers/adam-waldman-65131", address:"32 Parking Plaza, Suite 501, Ardmore, PA 19003", actions:[]},
+    {name:"Top Flite Home Loans", img:"files/9912bcc37ac0168ac677c68b3947f48f.jpg", brand:"files/ab2060a19ce92e9ef6c92f63e44e05db.png", type:"Lender", contact:"Crystal Bell", title:"Senior Loan Originator · NMLS #1907299", phones:[{label:"Direct",n:"267-664-6333"}], email:"cbell@tfhomeloans.com", site:"https://tfhomeloans.com/Loan-Officers/cbell/", address:"400 Arcola Road, Suite A5, Collegeville, PA 19426", actions:[]},
+    {name:"Home Front Mortgage", img:"files/d2adcafd6e3e0de3f774487278a36c1d.jpg", brand:"files/b3805a145ce595f05179d39781041cbf.png", type:"Lender", contact:"Jamie Ware", title:"Senior Mortgage Loan Officer · NMLS #406316", phones:[{label:"Direct",n:"610-568-2063"},{label:"Main",n:"(800) 707-8845"}], email:"Jamie@HomeFrontLoans.com", site:"https://homefrontloans.com/jamieware/", address:"7139-41 Germantown Ave., Philadelphia, PA 19119", actions:[]},
+    {name:"Farmers Insurance", img:"files/25eb520b1dabe9f378dd6fe4a72f9e2d.jpg", brand:"files/c1553c581442b81c1d52c393d18f3bd5.png", type:"Insurance", contact:"Shawn Turner", title:"Farmers Insurance Agent · licensed in PA & NJ", phones:[{label:"Office",n:"484-754-1114"}], email:"sturner2@farmersagent.com", site:"https://agents.farmers.com/pa/collegeville/shawn-turner/", address:"400 Arcola Rd, Ste A-5, Collegeville, PA 19426 · Mon–Fri 9–5, Sat 9–12", actions:[]},
+    {name:"America's Preferred Home Warranty", img:"files/b59afba3cc57687b4cd121fa1ca8a7f6.jpg", logo:true, type:"Home Warranty", contact:"America's Preferred Home Warranty", title:"APHW · free home warranty consultations for buyers and sellers", phones:[{label:"Specialists",n:"(517) 783-5124"}], email:"", site:"https://www.aphw.com/", book:"https://www.aphw.com/consultation/", bookLabel:"Schedule a consultation", flyer:"files/500a1365b8d615b06432529fe86dc68a.pdf", flyerLabel:"Client flyer with QR code", note:"Tell clients to save (517) 783-5124 in their contacts so the specialist's call isn't blocked as spam.", address:"", actions:[]},
+    {name:"Alcove Media", img:"files/afc647538992ebb9fcf0bb971f717650.jpg", logo:true, type:"Media", contact:"Alcove Media", title:"Listing photography, video, aerials & 3D tours · shoots 7 days a week", phones:[{label:"Office",n:"215-934-8427"}], email:"hello@alcovemedia.com", site:"https://alcovemedia.com/", book:"https://alcove.hd.pics/order", bookLabel:"Schedule & pricing", address:"300 Brookside Ave, Bldg 4, Suite 125, Ambler, PA 19002", actions:[{label:"Scheduling",email:"schedule@alcovemedia.com"}]}
+  ],
+  ascend: {
+    lede:"Resources, coaching and calendar for Rising Stars agents.",
+    director:{name:"Hope Sencer", role:"Director of Productivity Coaching", email:"hsencer@kw.com", phone:"484-925-7931",
+      bio:["Hope's coaching meets you wherever you are in your business — and moves you forward from there.",
+        "<b>New agents:</b> she ramps you up fast, with the daily habits, scripts and systems that turn a new license into your first closings.",
+        "<b>Mid producers:</b> she helps you break through your plateau and build the plan that takes your business to the next level.",
+        "<b>Experienced agents:</b> she keeps you accountable, on track and producing more, year after year."],
+      tagline:"Coaching is for everyone!"},
+    links:[ {name:"30-60-90 Plan — New or non-capping agent (fillable PDF)", url:"files/9f233213f37221441c1eedf75e0b9c18.pdf"}, {name:"4-1-1 Action Goal Worksheet (fillable PDF)", url:"files/ad17de1509fa98a507f778d3f3d295c0.pdf"}, {name:"Rising Stars playbook", url:""}, {name:"Rising Stars coaching calendar", url:""}, {name:"Rising Stars lead routing", url:""}, {name:"Rising Stars marketing kit", url:""} ]
+  },
+  kellerized: {name:"KELLERIZED magazine", url:"https://kellerizedmedia.com/", note:"Confirm whether KWRG will feature this magazine or its own agent spotlight."},
+  njpa: [
+    {topic:"Attorney review", pa:"", nj:""},
+    {topic:"Agency disclosure", pa:"", nj:""},
+    {topic:"Seller disclosure form", pa:"", nj:""},
+    {topic:"Transfer tax / realty transfer fee", pa:"", nj:""},
+    {topic:"Earnest money / deposits", pa:"", nj:""},
+    {topic:"Inspections & certificates of occupancy", pa:"", nj:""},
+    {topic:"Who runs settlement", pa:"", nj:""},
+    {topic:"MLS & lockbox", pa:"", nj:""}
+  ],
+  ce: {lede:"Sign up and the office will enroll you in your continuing education courses.", url:"https://form.jotform.com/263085423492055"},
+  suggestionForm: "https://form.jotform.com/263084624761056",
+  /* Upcoming events — newest additions anywhere; past events hide automatically.
+     Format: {title:"", date:"YYYY-MM-DD", time:"11:00 AM", st:"BOTH"|"PA"|"NJ", where:"", desc:""} */
+  events: []
+};
+
+/* ===================================================================== */
+const $ = (s,el=document)=>el.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money = (n,d=0)=>{ if(!isFinite(n)) return "—"; const neg=n<0; const s="$"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}); return neg?"−"+s:s; };
+const pct = (n,d=1)=> isFinite(n)? (n*100).toFixed(d)+"%" : "—";
+const nf = v => { const n=parseFloat(String(v??"").replace(/[^0-9.\-]/g,"")); return isFinite(n)?n:0; };
+const TODO = '<span class="todo">Link needed</span>';
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),2200);}
+function copyText(txt,btn){ try{ navigator.clipboard.writeText(txt).then(()=>toast("Copied"),()=>sel(btn)); }catch(e){ sel(btn); } }
+function sel(btn){ const s=btn?.previousElementSibling; if(!s)return; const r=document.createRange(); r.selectNodeContents(s); const w=getSelection(); w.removeAllRanges(); w.addRange(r); toast("Selected — press copy"); }
+
+const IC = {
+  hub:'<path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/>',
+  goals:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
+  money:'<rect x="2.5" y="6" width="19" height="13" rx="2"/><circle cx="12" cy="12.5" r="3"/><path d="M6 9.5h.01M18 15.5h.01"/>',
+  marketing:'<path d="M3 11v3l12 5V6L3 11z"/><path d="M15 9a3 3 0 0 1 0 6"/><path d="M6 15v4"/>',
+  forms:'<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
+  ascend:'<path d="M3 20 10 9l4 6 3-4 4 9z"/><path d="M14 5l2-2 2 2"/><path d="M16 3v6"/>',
+  suggest:'<path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/>',
+  luxury:'<path d="M6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18M9 3l3 6 3-6M12 21 9 9M12 21l3-12"/>',
+  partners:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>',
+  deals:'<path d="M3 21V8l9-5 9 5v13"/><path d="M8 21v-7h8v7"/><path d="M8 10h.01M16 10h.01"/>',
+  training:'<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/>',
+  office:'<circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/>',
+  ce:'<path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M8 9h7M8 13h5"/>',
+  kellerized:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 7h8M8 11h8M8 15h5"/>',
+  roleplay:'<path d="M4 5h11v8H8l-4 3z"/><path d="M15 9h5v8l-3-2h-6v-2"/>',
+  njpa:'<path d="M4 7h16M4 17h16"/><path d="M8 3 4 7l4 4M16 13l4 4-4 4"/>',
+  assoc:'<path d="M3 21h18M5 21V10M19 21V10M9 21v-7M15 21v-7M12 3 3 8h18z"/>',
+  lonewolf:'<path d="M5 4h14v16H5z"/><path d="M9 9l2 2 4-4M9 15h6"/>',
+  home:'<path d="M3 10.5 12 3l9 7.5V21H3z"/>', key:'<circle cx="8" cy="15" r="4"/><path d="M11 12 20 3M17 6l2 2"/>', doc:'<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/>', folder:'<path d="M3 6h7l2 2h9v11H3z"/>', shield:'<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>',
+  ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>', star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>', plus:'<path d="M12 5v14M5 12h14"/>', cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', pin:'<path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/>'
+};
+const svg = (k,extra="") => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra}>${IC[k]||""}</svg>`;
+
+const ROUTES = [
+  {grp:"Home"},
+  {id:"hub", label:"Hub"},
+  {id:"goals", label:"Goals"},
+  {id:"money", label:"My Money"},
+  {id:"suggest", label:"Suggestion Box"},
+  {grp:"Resources"},
+  {id:"marketing", label:"Marketing"},
+  {id:"forms", label:"Forms"},
+  {id:"training", label:"Tech Training"},
+  {id:"calendar", label:"Training Calendar"},
+  {id:"partners", label:"Partners"},
+  {id:"office", label:"Office Info & FAQ"},
+  {id:"njpa", label:"NJ vs PA"},
+  {id:"assoc", label:"Realtor Associations"},
+  {grp:"Grow"},
+  {id:"ascend", label:"Rising Stars"},
+  {id:"luxury", label:"KW Luxury"},
+  {id:"deals", label:"Deal Analyzer"},
+  {id:"ce", label:"Continuing Ed"}
+];
+const LABEL = Object.fromEntries(ROUTES.filter(r=>r.id).map(r=>[r.id,r.label]));
+
+/* ---------- platform ---------- */
+const P = { db:null, user:null, uid:null, canEdit:false, name:"", ready:false };
+let STATE_FILTER = "ALL";
+try{ STATE_FILTER = localStorage.getItem("kwrg.state") || "ALL"; }catch(e){}
+
+async function boot(){
+  try{
+    const c = window.claude;
+    if(c && c.use){
+      const [db,user] = await Promise.all([c.use("db").catch(()=>null), c.use("user").catch(()=>null)]);
+      P.db=db; P.user=user;
+      if(user){
+        try{ P.uid = await user.id(); }catch(e){}
+        try{ P.canEdit = await user.canEdit(); }catch(e){}
+        try{ P.name = await user.name(); }catch(e){}
+        if(!P.name){ try{ const me=await user.me(); P.name=me?.name||""; }catch(e){} }
+      }
+    }
+  }catch(e){}
+  P.ready=true;
+  paintWho();
+  route(); // re-render with platform data
+}
+function paintWho(){
+  const n=P.name||"Agent"; $("#whoName").textContent=n;
+  $("#av").textContent=(n.trim()[0]||"A").toUpperCase();
+}
+
+/* per-agent private storage: db (data/users/<id>/<key>) with browser fallback */
+const store = {
+  cache:{}, timers:{},
+  path(k){ return P.uid ? `data/users/${P.uid}/${k}` : null; },
+  async load(k){
+    if(this.cache[k]) return this.cache[k];
+    let v=null;
+    if(P.db && this.path(k)){
+      try{ const s=await withTimeout(P.db.doc(this.path(k)).get(),10000); if(s.exists){ v=JSON.parse(s.data().json||"null"); } }catch(e){}
+    }
+    if(v==null){ try{ v=JSON.parse(localStorage.getItem("kwrg."+k)||"null"); }catch(e){} }
+    if(P.ready) this.cache[k]=v; return v;
+  },
+  save(k,v,cb){
+    this.cache[k]=v;
+    clearTimeout(this.timers[k]);
+    this.timers[k]=setTimeout(async()=>{
+      let where="device";
+      try{ localStorage.setItem("kwrg."+k,JSON.stringify(v)); }catch(e){}
+      if(P.db && this.path(k)){
+        try{ await P.db.doc(this.path(k)).set({json:JSON.stringify(v),updated:new Date().toISOString()}); where="account"; }catch(e){ where="device"; }
+      }
+      cb && cb(where);
+    },700);
+  }
+};
+function withTimeout(p,ms){ return Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error("timeout")),ms))]); }
+function savedMsg(el){ return where=>{ if(el) el.textContent = where==="account" ? "Saved to your account · private to you" : "Saved on this device"; }; }
+
+/* ---------- router ---------- */
+let CLEAN=[];
+function onLeave(fn){ CLEAN.push(fn); }
+function route(){
+  CLEAN.forEach(f=>{try{f()}catch(e){}}); CLEAN=[];
+  let id=(location.hash||"#hub").slice(1); if(!LABEL[id]) id="hub";
+  $("#nav").innerHTML = ROUTES.map(r=> r.grp ? `<div class="grp">${r.grp}</div>` : `<a href="#${r.id}" ${r.id===id?'aria-current="page"':''}>${svg(r.id)}<span>${r.label}</span></a>`).join("");
+  $("#topTitle").textContent = id==="hub" ? "KWRG Agent Hub" : LABEL[id];
+  $("#app").classList.remove("open");
+  const v=$("#view"); v.innerHTML="";
+  (PAGES[id]||PAGES.hub)(v);
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",route);
+$("#menuBtn").onclick=()=>$("#app").classList.add("open");
+$("#scrim").onclick=()=>$("#app").classList.remove("open");
+document.querySelectorAll(".state-pick button").forEach(b=>{
+  b.setAttribute("aria-pressed", String(b.dataset.st===STATE_FILTER));
+  b.onclick=()=>{ STATE_FILTER=b.dataset.st; try{localStorage.setItem("kwrg.state",STATE_FILTER)}catch(e){}
+    document.querySelectorAll(".state-pick button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); route(); };
+});
+const stOK = st => STATE_FILTER==="ALL" || st==="BOTH" || st===STATE_FILTER;
+const stPill = st => st==="BOTH" ? '<span class="pill">PA · NJ</span>' : `<span class="pill ${st.toLowerCase()}">${st}</span>`;
+const head = (eyebrow,title,lede) => `<div class="ph"><div class="eyebrow">${eyebrow}</div><h2 class="pt">${title}</h2>${lede?`<p class="lede">${lede}</p>`:""}</div>`;
+const linkOr = (url,label,cls="btn") => url ? `<a class="${cls}" href="${esc(url)}" target="_blank" rel="noopener">${label} ${svg("ext",'width="14" height="14"')}</a>` : `<span class="${cls}" style="cursor:default">${label}</span> ${TODO}`;
+
+/* ---------- setup checklist (editors) ---------- */
+function missingItems(){
+  const m=[]; const C=CONTENT;
+  C.offices.forEach(o=>{ ["hours","fax"].forEach(k=>{ if(!o[k]) m.push(`${o.short}: ${({mls:"Bright MLS broker code",license:"brokerage license #",hours:"office hours",fax:"fax"})[k]}`); }); });
+  C.wifi.forEach(w=>{ if(!w.network) m.push(`WiFi for ${w.location}`); });
+  [...C.brokers,...C.leadership].forEach(p=>{ if(!p.phone&&!p.email) m.push(`Contact info for ${p.name}`); });
+  if(!C.marketing.canva) m.push("KW Canva hub link");
+  if(!C.trainingCalendar) m.push("Training calendar link");
+  C.marketing.assets.forEach(a=>{ if(!a.dark||!a.light) m.push(`Logo files: ${a.name}`); });
+  C.marketing.extras.forEach(x=>{ if(!x.url) m.push(x.name); });
+  C.formsTop.forEach(x=>{ if(!x.url) m.push(x.name); });
+  const fm=C.forms.filter(f=>!f.url).length; if(fm) m.push(`${fm} form links`);
+  C.training.forEach(x=>{ if(!x.url) m.push(`Training: ${x.name}`); });
+  C.partners.forEach(p=>{ if(!p.contact) m.push(`Partner details: ${p.name}`); });
+  if(!C.ascend.director.name) m.push("Rising Stars director / access contact");
+  C.ascend.links.forEach(l=>{ if(!l.url) m.push(l.name); });
+  if(C.faq.some(f=>!f.a)) m.push("FAQ answers");
+  if(C.njpa.some(r=>!r.pa)) m.push("NJ vs PA guide content (broker review)");
+  return m;
+}
+
+/* ===================================================================== PAGES */
+const PAGES = {};
+
+/* ---------------- HUB ---------------- */
+PAGES.hub = v => {
+  const first=(P.name||"").split(" ")[0];
+  const QL=[["marketing","Marketing"],["training","Tech Training"],["forms","Forms"],["partners","Partners"],["office","Office Info"],["lonewolf","Lone Wolf"],["deals","Deal Analyzer"],["njpa","NJ vs PA"],["assoc","Associations"],["money","My Money"],["calendar","Training Calendar"]];
+  v.innerHTML = `
+  <section class="hero">
+    <div style="position:relative;z-index:1">
+      <h2>${first?`Welcome back, ${esc(first)}`:"Welcome to the KWRG Agent Hub"}</h2>
+      <p>Your central hub for every brokerage tool and resource across our Pennsylvania and New Jersey offices.</p>
+      <div class="offices"><span>KW Realty Group · Collegeville PA</span><span>KW Realty Group AC · Atlantic City NJ</span></div>
+    </div>
+    <a class="btn" href="#goals">${svg("goals",'width="18" height="18"')} Enter your goals</a>
+  </section>
+  <section><h3 class="st">Quick links</h3><div class="ql">${QL.map(([id,l],i)=> id==="calendar"
+      ? (CONTENT.trainingCalendar
+          ? `<a class="card" href="#calendar"><span class="ico ${i%2?'alt':''}">${svg("cal")}</span>${l}</a>`
+          : `<a class="card" href="#" data-soon="1" style="opacity:.75"><span class="ico ${i%2?'alt':''}">${svg("cal")}</span>${l}<span class="todo" style="margin-top:-4px">Coming soon</span></a>`)
+      : id==="lonewolf"
+      ? `<a class="card" href="https://transact-workflow.lwolf.com/" target="_blank" rel="noopener"><span class="ico ${i%2?'alt':''}">${svg("lonewolf")}</span>${l}</a>`
+      : `<a class="card" href="#${id}"><span class="ico ${i%2?'alt':''}">${svg(id)}</span>${l}</a>`).join("")}</div></section>
+  <section id="evSec"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px"><h3 class="st" style="margin:0">Upcoming events</h3><span id="evAdd"></span></div><div id="evList" class="grid g2"><div class="empty">Loading events…</div></div><div id="evForm"></div></section>
+  <section id="setup"></section>`;
+  v.querySelectorAll("[data-soon]").forEach(a=>a.onclick=e=>{e.preventDefault(); toast("The training calendar link is coming soon.");});
+  renderEvents();
+  if(P.canEdit){
+    const m=missingItems();
+    $("#setup").innerHTML = `<div class="card pad"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline"><h3 class="st" style="margin:0">Setup checklist</h3><span class="note">Only hub editors see this · ${m.length} items to supply</span></div>
+      <p class="note" style="margin:8px 0 12px">Send these to Claude and they'll be added to the hub. Each one shows a “Link needed” tag on its page until then.</p>
+      <div class="grid g3" style="gap:6px 18px">${m.map(x=>`<div style="font-size:13.5px;display:flex;gap:8px"><span style="color:var(--warn)">○</span>${esc(x)}</div>`).join("")}</div></div>`;
+  }
+};
+function renderEvents(){
+  const list=$("#evList"); if(!list) return;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const evs=(CONTENT.events||[]).filter(e=> new Date(e.date+"T23:59:59")>=today && stOK(e.st||"BOTH")).sort((a,b)=>a.date.localeCompare(b.date));
+  list.innerHTML = evs.length ? evs.map(e=>{
+    const d=new Date(e.date+"T12:00:00");
+    const when=d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",year:"numeric"})+(e.time?` · ${esc(e.time)}`:"");
+    return `<article class="card ev"><div class="date"><small>${d.toLocaleDateString("en-US",{month:"short"}).toUpperCase()}</small><b>${d.getDate()}</b></div>
+      <div style="min-width:0"><h4>${esc(e.title)}</h4>
+      <div class="meta"><span>${svg("cal",'width="13" height="13" style="vertical-align:-2px"')} ${when}</span>${e.where?`<span>${svg("pin",'width="13" height="13" style="vertical-align:-2px"')} ${esc(e.where)}</span>`:""}</div>
+      ${e.desc?`<p>${esc(e.desc)}</p>`:""}${e.st&&e.st!=="BOTH"?`<div style="margin-top:8px">${stPill(e.st)}</div>`:""}</div></article>`; }).join("")
+    : `<div class="empty">No upcoming events posted${STATE_FILTER!=="ALL"?` for ${STATE_FILTER}`:""} yet. Check back soon.</div>`;
+}
+function confirmDel(btn,fn){
+  if(btn.dataset.armed){ fn(); return; }
+  btn.dataset.armed="1"; btn.classList.add("on"); btn.title="Click again to delete"; toast("Click again to delete");
+  setTimeout(()=>{ delete btn.dataset.armed; btn.classList.remove("on"); },3000);
+}
+
+/* ---------------- GOALS ---------------- */
+const GOAL_DEF = {
+  investment:[["home1","1st Home"],["home2","2nd Home"],["invest","Investment Property"],["college","College Planning"],["biz2","2nd Business"],["foundation","Foundation"],["retire","Retirement"]],
+  debt:[["cc","Credit Card"],["auto","Auto Loan"],["homeLoan","Home Loan"],["collegeLoan","College Loan"],["otherDebt","Other Debt"]],
+  income:[["flip","Profit Flip"],["spouse","Spouse / Partner Income"],["profitShare","KW Profit Share"],["outside","Other Outside Income"]]
+};
+const GOAL_DEFAULT = {monthly:"",avgComm:"9000",fallthrough:"10",nogo:"20",convPerClient:"30",vacation:"4",days:"5"};
+function goalCalc(g){
+  const monthly=nf(g.monthly), yearly=monthly*12, reserves=monthly*3, lifestyle=yearly+reserves;
+  const sum=a=>a.reduce((s,[k])=>s+nf(g[k]),0);
+  const inv=sum(GOAL_DEF.investment), debt=sum(GOAL_DEF.debt), add=sum(GOAL_DEF.income);
+  const total=Math.max(0,lifestyle+inv+debt-add), uplift=total*.27, income=total+uplift;
+  const comm=nf(g.avgComm), ft=nf(g.fallthrough)/100, ng=nf(g.nogo)/100, cpc=nf(g.convPerClient);
+  const closings = comm>0? income/comm : 0;
+  const contracts = closings/(1-Math.min(ft,.95));
+  const clients = contracts/(1-Math.min(ng,.95));
+  const convYear = clients*cpc;
+  const weeks = Math.max(1,52-nf(g.vacation));
+  const convWeek = convYear/weeks;
+  const convDay = convWeek/Math.max(1,nf(g.days));
+  return {yearly,reserves,lifestyle,inv,debt,add,total,uplift,income,closings,contracts,clients,convYear,convWeek,convDay,contactsQ:convYear/4};
+}
+PAGES.goals = async v => {
+  v.innerHTML = head("Business plan","Goals","Lifestyle, investment and debt — mapped all the way down to the conversations you need each day.")+`<div class="empty">Loading your goals…</div>`;
+  let g = Object.assign({}, GOAL_DEFAULT, await store.load("goals") || {});
+  const moneyF=(k,l)=>`<label class="f">${l}<div class="in"><span>$</span><input id="g_${k}" data-k="${k}" inputmode="decimal" placeholder="0" value="${esc(g[k]||"")}"></div></label>`;
+  const plainF=(k,l,suf)=>`<label class="f">${l}<div class="in"><input id="g_${k}" data-k="${k}" inputmode="decimal" placeholder="0" value="${esc(g[k]||"")}">${suf?`<span class="suf">${suf}</span>`:""}</div></label>`;
+  v.innerHTML = head("Business plan","Goals","Lifestyle, investment and debt — mapped all the way down to the conversations you need each day.")+`
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="save-state" id="gSave">${P.uid?"Private to you":"Saves on this device"}</span><button class="btn sm ghost" id="gReset">Reset</button></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start">
+    <div class="grid">
+      <div class="card pad"><h3 class="st">Lifestyle</h3><div class="fields">${moneyF("monthly","Monthly expenses")}</div>
+        <div class="stats" style="margin-top:12px"><div class="stat card"><small>Yearly</small><b id="o_yearly">$0</b></div><div class="stat card"><small>3 mo. reserves</small><b id="o_reserves">$0</b></div><div class="stat card"><small>Lifestyle total</small><b id="o_lifestyle">$0</b></div></div>
+        <p class="note" style="margin:10px 0 0">Tip: build your budget in <a href="#money">My Money</a> and send the total here.</p></div>
+      <div class="card pad"><h3 class="st">Investment <span class="note num" id="o_inv"></span></h3><div class="fields">${GOAL_DEF.investment.map(([k,l])=>moneyF(k,l)).join("")}</div></div>
+      <div class="card pad"><h3 class="st">Debt <span class="note num" id="o_debt"></span></h3><div class="fields">${GOAL_DEF.debt.map(([k,l])=>moneyF(k,l)).join("")}</div></div>
+      <div class="card pad"><h3 class="st">Additional income <span class="note num" id="o_add"></span></h3><div class="fields">${GOAL_DEF.income.map(([k,l])=>moneyF(k,l)).join("")}</div></div>
+      <div class="card pad"><h3 class="st">Assumptions</h3><div class="fields">${moneyF("avgComm","Avg. commission / closing")}${plainF("fallthrough","Fall-through","%")}${plainF("nogo","No-go","%")}${plainF("convPerClient","Conversations / client")}${plainF("vacation","Vacation weeks")}${plainF("days","Work days / week")}</div></div>
+    </div>
+    <div class="grid" style="position:sticky;top:76px">
+      <div class="card pad" style="background:var(--ink);color:var(--ink-fg);border-color:var(--ink)">
+        <div class="eyebrow" style="color:#FF8A90">The two magic numbers</div>
+        <div class="stats" style="margin-top:10px"><div><b class="num" id="o_convDay" style="font-family:var(--display);font-size:56px;font-weight:850;line-height:1">0</b><div style="font-size:12px;letter-spacing:.1em;color:var(--ink-muted)">CONVERSATIONS / DAY</div></div>
+        <div><b class="num" id="o_contactsQ" style="font-family:var(--display);font-size:56px;font-weight:850;line-height:1">0</b><div style="font-size:12px;letter-spacing:.1em;color:var(--ink-muted)">CONTACTS / QUARTER</div></div></div>
+      </div>
+      <div class="card pad"><h3 class="st">Targets</h3><div class="stats"><div class="stat card"><small>Total needed</small><b id="o_total">$0</b></div><div class="stat card"><small>IRS uplift (27%)</small><b id="o_uplift">$0</b></div><div class="stat card"><small>Income needed / yr</small><b id="o_income">$0</b></div></div></div>
+      <div class="card pad"><h3 class="st">Pipeline</h3><div class="stats"><div class="stat card"><small>Closings</small><b id="o_closings">0</b></div><div class="stat card"><small>Contracts</small><b id="o_contracts">0</b></div><div class="stat card"><small>Clients</small><b id="o_clients">0</b></div><div class="stat card"><small>Conv. / year</small><b id="o_convYear">0</b></div><div class="stat card"><small>Conv. / week</small><b id="o_convWeek">0</b></div></div>
+      <p class="note" style="margin:10px 0 0">Closings = income ÷ avg. commission. Contracts and clients gross up for fall-through and no-go. Conversations spread over your working weeks and days.</p></div>
+    </div>
+  </div>`;
+  const out=()=>{ const r=goalCalc(g); const M=["yearly","reserves","lifestyle","total","uplift","income"]; M.forEach(k=>$("#o_"+k).textContent=money(r[k]));
+    ["inv","debt","add"].forEach(k=>$("#o_"+k).textContent=r[k]?money(r[k]):"");
+    $("#o_closings").textContent=Math.ceil(r.closings); $("#o_contracts").textContent=Math.ceil(r.contracts); $("#o_clients").textContent=Math.ceil(r.clients);
+    $("#o_convYear").textContent=Math.ceil(r.convYear).toLocaleString(); $("#o_convWeek").textContent=Math.ceil(r.convWeek); $("#o_convDay").textContent=Math.ceil(r.convDay); $("#o_contactsQ").textContent=Math.ceil(r.contactsQ).toLocaleString(); };
+  v.querySelectorAll("input[data-k]").forEach(i=>i.addEventListener("input",()=>{ g[i.dataset.k]=i.value; out(); store.save("goals",g,savedMsg($("#gSave"))); }));
+  $("#gReset").onclick=e=>confirmDel(e.currentTarget,()=>{ g=Object.assign({},GOAL_DEFAULT); store.save("goals",g,savedMsg($("#gSave"))); route(); });
+  out();
+};
+
+/* ---------------- MY MONEY ---------------- */
+const BUDGET = [
+  {k:"1000", h:"Build the machine.", t:"Business Expenses", lines:["Payroll Gross","Employer Payroll Tax","Conference / Convention Travel","Advertising & Marketing","Signs & Riders","Business Cards / Printing","MLS Fees","Supra / Lockbox Fees","Business Insurance / Workers' Comp","Office Rent / Coworking Space","KW Office Charges","Payroll / Bookkeeping Software","KW Cap","KW Royalty","Board of Realtors / Association Dues","Software & Recurring Business Subscriptions","Website / Domain / Hosting","AI / Technology Tools","Lead Generation / Purchased Leads","Photography / Video / Listing Media","Client Gifts / Closing Gifts","Client Events / Appreciation Events","Professional Development / Coaching","Books / Courses / Training","Airfare / Hotels / Business Travel","Business Meals","Vehicle / Business Mileage","Parking / Tolls — Business","Accounting / CPA / Tax Preparation","Legal / Professional Fees","Office Supplies","Computer / Phone / Equipment","Postage / Shipping / Mailing","Transaction Coordinator / Admin Support","Referral Fees Paid","Charitable / Community Sponsorships","Bank / Credit Card / Merchant Fees","Business Phone / Internet","Other Recurring Business Expenses","Miscellaneous Business Expenses"]},
+  {k:"2000", h:"Enjoy what the machine creates.", t:"Family & Life Expenses", lines:["Primary Home PITI","Rental #1 PITI","Rental Condo Fee","Rental Sewer","Primary Home Sewer","Car Insurance","Cell Phones","Child Care","Child Sports & Activities","Car Maintenance","Car Payment #1","Car Payment #2","Miscellaneous","Cable","Electric","Water","Gas — Car","Yard Care","Gas — Utility","Supermarket / Groceries","Student Loans","Entertainment","Dry Cleaning","Take Out / Dine Out","Gym","Recurring Subscriptions — streaming, apps","Amazon Prime","Home Repair / Maintenance","Daily Coffee / Drinks","Gifts","Life Insurance","Health Insurance","Vacation","Minimum Debt Service","Alimony","Child Support","Family Medical Care — prescriptions, co-pays","Religious Donations","Homeowners Association (HOA)","Education Expenses","Pet Care","Legal Fees","Auto Registration / Tolls / Parking","Clothing & Shoes","Personal Care / Grooming","Household Supplies","Furniture / Appliances","Technology / Electronics"]},
+  {k:"3000", h:"Make tomorrow better than today.", t:"Savings, Investing & Wealth Building", lines:["Emergency Fund Contribution","Retirement Contributions — 401(k) / IRA","Brokerage / Investment Account","529 / College Savings","General Savings","Vacation / Travel Savings Fund","Home Improvement / Capital Project Fund","Vehicle Replacement Fund","Rental Property Reserve / CapEx","Future Real Estate Purchase Fund","Major Purchase Fund","Additional Principal — Primary Mortgage","Additional Principal — Rental Mortgage(s)","Additional Debt Paydown","Other Investments"]}
+];
+const ESSENTIAL = new Set(["2001","2006","2007","2008","2011","2012","2015","2016","2017","2019","2020","2021","2031","2032","2034","2035","2036","2037","2039"]);
+const FREQ = {weekly:52, monthly:12, quarterly:4, yearly:1};
+function moneyCalc(m){
+  const out={groups:{},bills:[],ess:0,family:0,save:0,biz:0};
+  BUDGET.forEach(g=>{
+    const rows=[...g.lines.map((l,i)=>({code:String(+g.k+i+1),label:l})), ...(m.custom||[]).filter(c=>c.g===g.k)];
+    let yr=0;
+    rows.forEach(r=>{ const s=m.lines[r.code]||{}; const a=nf(s.amt)*(FREQ[s.freq||"monthly"]); yr+=a;
+      if(g.k==="2000" && (s.ess ?? ESSENTIAL.has(r.code))) out.ess+=a;
+      if(s.due && nf(s.amt)) out.bills.push({label:r.label,due:+s.due,amt:nf(s.amt),freq:s.freq||"monthly"}); });
+    out.groups[g.k]=yr;
+  });
+  out.biz=out.groups["1000"]; out.family=out.groups["2000"]; out.save=out.groups["3000"];
+  out.total=out.biz+out.family+out.save;
+  out.bills.sort((a,b)=>a.due-b.due);
+  return out;
+}
+PAGES.money = async v => {
+  v.innerHTML = head("Private to you","My Money","Where your money goes, what your family needs, and how well it's being managed.")+`<div class="empty">Loading…</div>`;
+  let m = await store.load("money") || {lines:{},custom:[]}; m.lines=m.lines||{}; m.custom=m.custom||[];
+  let tab="dash", showHidden=false;
+  const draw=()=>{
+    v.innerHTML = head("Private to you","My Money","Where your money goes, what your family needs, and how well it's being managed.")+`
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div class="tabs" role="tablist"><button role="tab" aria-selected="${tab==="dash"}" data-t="dash">Dashboard</button><button role="tab" aria-selected="${tab==="budget"}" data-t="budget">Budget</button></div><span class="save-state" id="mSave">${P.uid?"Private to you":"Saves on this device"}</span></div>
+    <div id="mBody"></div>`;
+    v.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tab=b.dataset.t;draw();});
+    tab==="dash"?dash():budget();
+  };
+  const dash=()=>{
+    const r=moneyCalc(m), b=$("#mBody");
+    const now=new Date(), today=now.getDate();
+    b.innerHTML=`<div class="grid g3">
+      ${[["1000","My Business","Cost of running the business",r.biz],["2000","Fund My Life","What home actually costs",r.family],["3000","Build My Future","Savings and wealth building",r.save]].map(([k,t,s,y])=>`<div class="card pad"><div class="eyebrow" style="color:var(--muted)">${k}</div><h3 class="st" style="margin:2px 0 6px">${t}</h3><b class="num" style="font-size:28px">${money(y)}</b><div class="note">${s} · ${money(y/12)} a month</div></div>`).join("")}
+    </div>
+    <div class="card pad"><h3 class="st">Your life number</h3>
+      <div class="bar" aria-hidden="true">${r.total?[["biz","var(--fg)"],["family","var(--red)"],["save","var(--ok)"]].map(([k,c])=>`<i style="width:${r[k]/r.total*100}%;background:${c}"></i>`).join(""):""}</div>
+      <div class="stats" style="margin-top:14px"><div class="stat card hot"><small>Total monthly cash requirement</small><b class="num">${money(r.total/12)}</b></div><div class="stat card"><small>Required annual income</small><b>${money(r.total)}</b><span class="note">before taxes</span></div></div>
+      <button class="btn primary" id="toGoal" style="margin-top:14px" ${r.total?"":"disabled"}>${svg("goals",'width="16" height="16"')} Use this number in my business goal</button></div>
+    <div class="card pad"><h3 class="st">Your family number</h3><div class="stats">
+      <div class="stat card"><small>Bare minimum</small><b>${money(r.ess/12)}</b><span class="note">a month · keep the lights on</span></div>
+      <div class="stat card"><small>Normal</small><b>${money(r.family/12)}</b><span class="note">a month · life as you live it</span></div>
+      <div class="stat card"><small>Comfortable</small><b>${money((r.family+r.save)/12)}</b><span class="note">a month · life plus future</span></div></div>
+      <p class="note" style="margin:10px 0 0">Bare minimum counts family lines marked with a star in the budget. Tap the star on any line to change it.</p></div>
+    <div class="card"><div class="bhead"><h3 style="margin:0">Bills due this month</h3><span class="note">${now.toLocaleDateString("en-US",{month:"long",year:"numeric"})}</span></div>
+      ${r.bills.length?`<div class="tw"><table><thead><tr><th>Due</th><th>Bill</th><th class="r">Amount</th></tr></thead><tbody>${r.bills.map(x=>`<tr style="${x.due<today?"color:var(--muted)":""}"><td class="num">${x.due}${x.due<today?" · paid?":""}</td><td>${esc(x.label)}</td><td class="r num">${money(x.amt)}${x.freq!=="monthly"?` <span class="note">${x.freq}</span>`:""}</td></tr>`).join("")}</tbody></table></div>`:`<div class="pad"><div class="empty">Add a due day to any budget line and it will show up here.</div></div>`}</div>`;
+    $("#toGoal").onclick=async()=>{ const g=Object.assign({},GOAL_DEFAULT,await store.load("goals")||{}); g.monthly=String(Math.round(r.total/12)); store.save("goals",g,()=>{}); toast("Sent to Goals"); location.hash="goals"; };
+  };
+  const budget=()=>{
+    const b=$("#mBody");
+    b.innerHTML = BUDGET.map(g=>{
+      const rows=[...g.lines.map((l,i)=>({code:String(+g.k+i+1),label:l})), ...m.custom.filter(c=>c.g===g.k)];
+      return `<section class="card"><div class="bhead"><div><div class="k">${g.k} — ${g.h.toUpperCase()}</div><h3>${g.t}</h3></div><div style="text-align:right"><b class="num" style="font-size:22px" id="gt_${g.k}">$0</b><div class="note">per year</div></div></div>
+      <div class="bbody">${rows.map(r=>{ const s=m.lines[r.code]||{}; if(s.hidden&&!showHidden) return ""; const ess=s.ess ?? ESSENTIAL.has(r.code);
+        return `<div class="brow" data-code="${r.code}" style="${s.hidden?"opacity:.5":""}"><div class="lbl"><span class="code">${r.code}</span>${esc(r.label)}</div>
+          <div class="in"><span>$</span><input id="amt_${r.code}" data-f="amt" inputmode="decimal" placeholder="0" value="${esc(s.amt||"")}" aria-label="${esc(r.label)} amount"></div>
+          <select class="plain" id="fq_${r.code}" data-f="freq" aria-label="Frequency" style="padding:8px 6px">${Object.keys(FREQ).map(f=>`<option ${ (s.freq||"monthly")===f?"selected":""}>${f}</option>`).join("")}</select>
+          <input class="plain" id="due_${r.code}" data-f="due" inputmode="numeric" placeholder="Due" value="${esc(s.due||"")}" aria-label="Due day of month" style="padding:8px 6px;text-align:center">
+          <span class="tot" id="lt_${r.code}">${money(nf(s.amt)*FREQ[s.freq||"monthly"])}</span>
+          <span class="acts">${g.k==="2000"?`<button class="iconbtn ${ess?"on":""}" data-a="ess" title="Count in bare minimum" aria-label="Count in bare minimum">${svg("star",ess?'fill="currentColor"':"")}</button>`:""}<button class="iconbtn" data-a="hide" title="${s.hidden?"Show":"Hide"} this line" aria-label="Hide this line">${svg("eye")}</button></span></div>`; }).join("")}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn sm" data-add="${g.k}">${svg("plus",'width="14" height="14"')} Add a line</button><button class="btn sm ghost" data-show>${showHidden?"Hide unused lines":"Show hidden lines"}</button></div></div></section>`;
+    }).join("") + `<div class="card pad" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center;background:var(--ink);color:var(--ink-fg);border-color:var(--ink)"><div><div class="eyebrow" style="color:#FF8A90">Total annual cash requirement</div><b class="num" style="font-size:32px" id="gtAll">$0</b></div><div class="num" id="gtMo" style="color:var(--ink-muted)"></div></div>`;
+    const totals=()=>{ const r=moneyCalc(m); BUDGET.forEach(g=>$("#gt_"+g.k).textContent=money(r.groups[g.k])); $("#gtAll").textContent=money(r.total); $("#gtMo").textContent=money(r.total/12)+" per month, before taxes"; };
+    const persist=()=>store.save("money",m,savedMsg($("#mSave")));
+    b.querySelectorAll(".brow").forEach(row=>{ const code=row.dataset.code;
+      row.querySelectorAll("[data-f]").forEach(inp=>inp.addEventListener("input",()=>{ const s=m.lines[code]=m.lines[code]||{}; s[inp.dataset.f]=inp.value;
+        $("#lt_"+code).textContent=money(nf(s.amt)*FREQ[s.freq||"monthly"]); totals(); persist(); }));
+      row.querySelectorAll("[data-a]").forEach(btn=>btn.onclick=()=>{ const s=m.lines[code]=m.lines[code]||{};
+        if(btn.dataset.a==="ess"){ s.ess=!(s.ess ?? ESSENTIAL.has(code)); } else { s.hidden=!s.hidden; } persist(); budget(); }); });
+    b.querySelectorAll("[data-add]").forEach(btn=>btn.onclick=()=>{ const g=btn.dataset.add; const n=m.custom.filter(c=>c.g===g).length;
+      const box=document.createElement("div"); box.style.cssText="display:flex;gap:8px;width:100%;margin-top:8px"; box.innerHTML=`<input class="plain" id="newLine_${g}" placeholder="Line name" style="flex:1"><button class="btn sm primary">Add</button>`; btn.parentElement.after(box);
+      const inp=box.querySelector("input"); inp.focus(); box.querySelector("button").onclick=()=>{ if(!inp.value.trim())return; m.custom.push({g,code:String(+g+90+n),label:inp.value.trim()}); persist(); budget(); }; });
+    b.querySelectorAll("[data-show]").forEach(btn=>btn.onclick=()=>{showHidden=!showHidden;budget();});
+    totals();
+  };
+  draw();
+};
+
+/* ---------------- MARKETING ---------------- */
+PAGES.marketing = v => {
+  const M=CONTENT.marketing;
+  v.innerHTML = head("Brand","Marketing","Brokerage-approved templates, logos and brand files for both offices.")+`
+  <div class="card pad" style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center">
+    <div><h3 class="st" style="margin:0 0 4px">KW Canva hub</h3><p class="note" style="margin:0">Brokerage-approved templates and brand-compliant designs.</p></div>${linkOr(M.canva,"Open Canva KW","btn primary")}</div>
+  <div class="card"><div class="bhead"><div><h3 style="margin:0">Logo & brand assets</h3><div class="note">Official logo files for each office</div></div></div>
+    <div class="tw"><table><thead><tr><th>Logo</th><th>Dark background</th><th>Light background</th></tr></thead><tbody>
+    ${M.assets.map(a=>`<tr><td style="font-weight:600">${esc(a.name)}</td>${[["dark","#17181C"],["light","#FFFFFF"]].map(([k,bg])=>`<td>${a[k]?`<a href="${esc(a[k])}" data-name="${esc(a.name)} logo ${k} background" style="display:inline-flex;flex-direction:column;gap:6px;text-decoration:none"><span style="display:grid;place-items:center;width:150px;height:72px;max-width:100%;border-radius:8px;border:1px solid var(--line);background:${bg};padding:8px"><img src="${esc(a[k])}" alt="${esc(a.name)} logo, ${k} background" style="max-width:100%;max-height:100%;object-fit:contain"></span><span style="font-size:13px;font-weight:600;color:var(--red)">Open file</span></a>`:TODO}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>
+  <div class="card"><div class="bhead"><h3 style="margin:0">Social channels</h3></div>${M.extras.map(x=>x.url?`<a class="li" href="${esc(x.url)}" target="_blank" rel="noopener"><span class="t">${esc(x.name)}</span>${svg("ext",'width="15" height="15"')}</a>`:`<div class="li"><span class="t">${esc(x.name)}</span>${TODO}</div>`).join("")}</div>
+  <div class="card pad"><h3 class="st">Brand checklist</h3><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px">
+    <li>PA materials use <b>Keller Williams Realty Group</b>; NJ materials use <b>Keller Williams Realty Group AC</b>.</li>
+    <li>Include the office address and phone of the brokerage that holds the listing.</li>
+    <li>Keep every phone number on a piece the same font size.</li></ul></div>`;
+};
+
+/* ---------------- FORMS ---------------- */
+PAGES.forms = v => {
+  let q="";
+  v.innerHTML = head("Library","Forms",`Seller, buyer, rental and office forms for ${STATE_FILTER==="ALL"?"both offices":STATE_FILTER==="PA"?"the Pennsylvania office":"the New Jersey office"}. Use the PA / NJ switch at the top to filter.`)+`
+  <div style="display:flex;flex-wrap:wrap;gap:8px">${CONTENT.formsTop.map(x=>linkOr(x.url,esc(x.name),"btn sm")).join("")}</div>
+  <div class="in" style="max-width:520px"><span>${svg("forms",'width="16" height="16"')}</span><input id="fq" placeholder="Search forms…" aria-label="Search forms"></div>
+  <div id="fl" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));align-items:start"></div>`;
+  const draw=()=>{
+    $("#fl").innerHTML = CONTENT.formCats.map(c=>{
+      const items=CONTENT.forms.filter(f=>f.cat===c.id && stOK(f.st) && f.name.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name));
+      return `<section class="card"><div class="bhead" style="align-items:center"><div style="display:flex;gap:10px;align-items:center"><span class="ico" style="width:34px;height:34px">${svg(c.icon)}</span><h3 style="margin:0;font-size:17px">${c.name}</h3></div><span class="note num">${items.length}</span></div>
+      ${items.length?items.map(f=> f.url
+        ? `<a class="li" href="${esc(f.url)}" target="_blank" rel="noopener"><span class="t">${esc(f.name)}</span><span style="display:flex;gap:6px;align-items:center">${stPill(f.st)}${svg("ext",'width="14" height="14"')}</span></a>`
+        : `<div class="li"><span class="t">${esc(f.name)}</span><span style="display:flex;gap:6px;align-items:center">${stPill(f.st)}${TODO}</span></div>`).join(""):`<div class="pad note">No forms match.</div>`}</section>`;
+    }).join("");
+  };
+  $("#fq").addEventListener("input",e=>{q=e.target.value.toLowerCase().trim();draw();});
+  draw();
+};
+
+/* ---------------- TRAINING ---------------- */
+PAGES.training = v => {
+  v.innerHTML = head("Learn the tools","Tech Training","Lone Wolf, KW Command and the KWRG training schedule in one place.")+`
+  <div class="grid g2">${CONTENT.training.map(t=>`<div class="card pad" style="display:flex;flex-direction:column;gap:10px"><div style="display:flex;gap:12px;align-items:center"><span class="ico">${svg("training")}</span><h3 class="st" style="margin:0">${esc(t.name)}</h3></div><p class="note" style="margin:0">${esc(t.desc)}</p><div>${linkOr(t.url,"Open")}</div></div>`).join("")}</div>
+  ${quickRefHTML()}
+  <section><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px"><div><h3 class="st" style="margin:0">📚 KW playbooks</h3><div class="note">Grab a playbook — tap a cover to read it in the hub or download it</div></div><span class="note num">${CONTENT.playbooks.filter(b=>!b.ext).length} guides</span></div>
+    <div class="shelf">${CONTENT.playbooks.map((b,i)=>b.ext?`<a class="book more" href="${esc(b.url)}" target="_blank" rel="noopener"><span class="bk-cover"><span class="bk-plus">+</span><b>More on<br>KW Connect</b><span class="note" style="color:inherit;opacity:.85">Log in to Command</span></span><span class="bk-meta"><b>${esc(b.name)}</b><span class="note">${esc(b.desc)}</span></span></a>`:`<a class="book" href="${esc(b.url)}" data-name="${esc(b.name)}" style="--tilt:${[-1.5,1,-0.5,1.5,-1,0.5,-1.2][i%7]}deg"><span class="bk-cover"><img src="${esc(b.cover)}" alt="" loading="lazy"><span class="bk-tag t-${esc(b.tag.toLowerCase().replace(/\s+/g,"-"))}">${esc(b.tag)}</span><span class="bk-read">Read ${svg("eye",'width="14" height="14"')}</span></span><span class="bk-meta"><b>${esc(b.name)}</b><span class="note">${esc(b.desc)}</span><span class="bk-pg num">${b.pages} ${b.pages===1?"page":"pages"}</span></span></a>`).join("")}</div></section>
+  <section class="card pad" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><span class="vs-play" style="flex:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div style="flex:1;min-width:200px"><h3 style="margin:0">Training Videos</h3><div class="note">KWRG's own training video series — coming soon.</div></div><span class="pill">Coming soon</span></section>
+  <section class="card"><div class="bhead"><div><h3 style="margin:0">Video libraries & podcasts</h3><div class="note">On-demand videos and shows to watch or listen to</div></div><span class="note num">${CONTENT.trainingVideos.length} ${CONTENT.trainingVideos.length===1?"section":"sections"}</span></div>
+    ${CONTENT.trainingVideos.map(t=>t.url?`<a class="li" href="${esc(t.url)}" target="_blank" rel="noopener"><span class="t"><b>${esc(t.name)}</b><br><span class="note">${esc(t.desc||"")}</span></span>${svg("ext",'width="15" height="15"')}</a>`:`<div class="li"><span class="t"><b>${esc(t.name)}</b></span>${TODO}</div>`).join("")}</section>
+  <p class="note">Calendars and training videos open in a new tab. Command videos need you to be signed in to KW Command.</p>`;
+};
+
+function quickRefHTML(){
+  const Q=CONTENT.quickRef;
+  return `<section class="card" id="quick-reference"><div class="bhead" style="align-items:center"><div><h3 style="margin:0">Quick reference</h3><div class="note">Cheat sheet for the KW Command + Lone Wolf Transact workflow</div></div>
+    ${Q.pdf?`<a class="btn primary sm" data-name="KWRG Quick Reference" href="${esc(Q.pdf)}" target="_blank" rel="noopener">${svg("forms",'width="15" height="15"')} View & download PDF</a>`:`<span class="todo">PDF uploading</span>`}</div>
+  <div class="pad" style="display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+    <div><div class="eyebrow" style="margin-bottom:10px">The 5-step workflow</div><ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px">${Q.steps.map(([t,d],i)=>`<li style="display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px"><span style="font-family:var(--display);font-weight:900;font-size:22px;line-height:1;color:var(--red)">${i+1}</span><div><b>${esc(t)}</b><div class="note">${esc(d)}</div></div></li>`).join("")}</ol></div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div><div class="eyebrow" style="margin-bottom:10px">Remember this</div><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px">${Q.remember.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>
+      <div style="border:1px solid var(--line);border-left:3px solid var(--red);border-radius:8px;padding:12px 14px;background:var(--red-soft)"><b style="color:var(--red)">DocuSign transition</b><div style="font-size:14px;margin-top:2px">${esc(Q.deadline)}</div></div>
+    </div>
+  </div>
+  <div style="padding:0 18px 18px;display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+    <div><div class="eyebrow" style="margin-bottom:6px">Transaction types at a glance</div><div class="tw"><table><thead><tr><th>Feature</th>${Q.types.cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead><tbody>${Q.types.rows.map(r=>`<tr><td style="font-weight:600">${esc(r[0])}</td>${r.slice(1).map(x=>`<td style="${x==="✓"?"color:var(--ok);font-weight:700":x==="—"?"color:var(--muted)":""}">${esc(x)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>
+    <div><div class="eyebrow" style="margin-bottom:10px">Quick login links</div><div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">${Q.logins.map(l=>l.url?`<a class="btn" style="justify-content:space-between" href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.name)} ${svg("ext",'width="14" height="14"')}</a>`:l.phone?`<div class="btn" style="justify-content:space-between;cursor:default"><span>${esc(l.name)}</span><span class="num">${esc(l.phone)}</span></div>`:`<div class="btn" style="justify-content:space-between;cursor:default;flex-wrap:wrap">${esc(l.name)} <span class="todo">Number needed</span></div>`).join("")}</div>
+    <p class="note" style="margin:14px 0 0">Memorize the flow: Contact → Opportunity → Documents → Sync → Transact</p></div>
+  </div></section>`;
+}
+
+/* ---------------- PARTNERS ---------------- */
+PAGES.partners = v => {
+  const ORDER=["Title","Lender","Insurance","Home Warranty","Media","Inspection"], TIER={Platinum:0,Silver:1,Bronze:2};
+  const rank=t=>{const i=ORDER.indexOf(t);return i<0?ORDER.length:i;};
+  const list=CONTENT.partners.map((p,i)=>({p,i})).sort((a,b)=>rank(a.p.type)-rank(b.p.type)||((TIER[a.p.tier]??9)-(TIER[b.p.tier]??9))||a.i-b.i).map(x=>x.p);
+  const types=[...new Set(list.map(p=>p.type))];
+  const tlabel=t=>t==="Title"?"Title & settlement":t==="Lender"?"Lenders":t==="Inspection"?"Home inspectors":t==="Media"?"Photography & video":t==="Home Warranty"?"Home warranty":t;
+  let filt="All";
+  v.innerHTML = head("Directory","Partners","Our preferred partners — Platinum, Silver and Bronze — plus trusted vendors for title, lending, insurance, inspections and more.")+`<div class="chips" id="pf"></div><div class="pgrid" id="pg"></div>`;
+  const row=(label,val,kind)=>`<div class="prow"><span class="pk">${esc(label)}</span><span class="pv ${kind==="num"?"num":""}">${esc(val)}</span><button class="copy" onclick="copyText('${esc(val)}',this)">Copy</button></div>`;
+  const draw=()=>{
+    $("#pf").innerHTML=["All",...types].map(t=>`<button class="chip" aria-pressed="${t===filt}" data-f="${esc(t)}">${esc(tlabel(t))}</button>`).join("");
+    v.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{filt=b.dataset.f;draw();});
+    const card=p=>{
+      const person = p.contact && p.contact!==p.name;
+      return `<article class="card pcard">
+        <div class="pbrand">${p.brand?`<img src="${esc(p.brand)}" alt="${esc(p.name)} logo" loading="lazy">`:`<b>${esc(p.name)}</b>`}<span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${p.tier?`<span class="pill tier tier-${esc(p.tier.toLowerCase())}">★ ${esc(p.tier)} Partner</span>`:""}<span class="pill">${esc(p.type==="Title"?"Title & settlement":p.type)}</span></span></div>
+        <header class="phead">
+          ${p.img?`<img class="pimg ${p.logo?"logo":""}" src="${esc(p.img)}" alt="${esc(person?p.contact:p.name)}" loading="lazy">`:`<div class="pimg ph">${svg(p.type==="Title"?"shield":"partners")}</div>`}
+          <div style="min-width:0"><h3 class="pname">${esc(person?p.contact:p.name)}</h3><div class="pco">${person?`<b>${esc(p.name)}</b> · `:""}${esc(p.title||"")}</div></div>
+        </header>
+        <div class="pbody">
+          ${p.phones.map(ph=>row(ph.label,ph.n,"num")).join("")}
+          ${p.email?row("Email",p.email):`<div class="prow"><span class="pk">Email</span><span class="pv note">Use the contact form on their website</span></div>`}
+          ${p.address?`<div class="prow"><span class="pk">Office</span><span class="pv">${esc(p.address)}</span></div>`:""}
+          ${p.note?`<div style="margin-top:6px;font-size:13px;background:var(--warn-soft);color:var(--fg);border-radius:6px;padding:8px 10px">${esc(p.note)}</div>`:""}
+          ${p.actions.length?`<div class="eyebrow" style="color:var(--muted);margin-top:6px">Quick actions</div>${p.actions.map(a=>row(a.label,a.email)).join("")}`:""}
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 16px 16px">${p.book?`<a class="btn sm primary" href="${esc(p.book)}" target="_blank" rel="noopener">${esc(p.bookLabel||"Book online")} ${svg("ext",'width="13" height="13"')}</a>`:""}${p.flyer?`<a class="btn sm" href="${esc(p.flyer)}" data-name="${esc(p.name)} — ${esc(p.flyerLabel||"flyer")}">${svg("forms",'width="13" height="13"')} ${esc(p.flyerLabel||"Flyer")}</a>`:""}${p.site?`<a class="btn sm" href="${esc(p.site)}" target="_blank" rel="noopener">Visit website ${svg("ext",'width="13" height="13"')}</a>`:""}</div>
+      </article>`; };
+    $("#pg").innerHTML = (filt==="All"?types:[filt]).map(t=>`<h2 class="pcat">${esc(tlabel(t))}</h2>`+list.filter(p=>p.type===t).map(card).join("")).join("") || `<div class="empty">No partners in this category yet.</div>`;
+  };
+  draw();
+};
+
+/* ---------------- OFFICE INFO & FAQ ---------------- */
+PAGES.office = v => {
+  const offs=CONTENT.offices.filter(o=>stOK(o.state));
+  const person=p=>`<div class="card pad"><b style="font-size:15.5px">${esc(p.name)}</b><div class="note">${esc(p.role)}${p.scope?` · ${esc(p.scope)}`:""}</div>
+    <dl class="kv" style="margin-top:10px">${p.phone?`<dt>Phone</dt><dd><span class="num">${esc(p.phone)}</span><button class="copy" onclick="copyText('${esc(p.phone)}',this)">Copy</button></dd>`:""}${p.email?`<dt>Email</dt><dd><span>${esc(p.email)}</span><button class="copy" onclick="copyText('${esc(p.email)}',this)">Copy</button></dd>`:""}</dl>${!p.phone&&!p.email?`<div style="margin-top:8px"><span class="todo">Contact needed</span></div>`:""}</div>`;
+  const val=(x)=>x?`<span class="num">${esc(x)}</span>`:'<span class="todo">Needed</span>';
+  v.innerHTML = head("Who, where, how","Office Info & FAQ","Office details, brokers, leadership and quick answers.")+`
+  <section><h3 class="st">Offices</h3><div class="grid g2">${offs.map(o=>`<div class="card pad">${o.logo?`<div style="background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:12px;display:grid;place-items:center"><img src="${esc(o.logo)}" alt="${esc(o.name)} logo" style="height:64px;width:auto;max-width:100%;object-fit:contain"></div>`:""}<div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><div><b style="font-size:16px">${esc(o.short)}</b><div class="note">DBA ${esc(o.name)}${o.mc?` · ${esc(o.mc)}`:""}</div></div>${stPill(o.state)}</div>
+    <dl class="kv" style="margin-top:12px"><dt>Address</dt><dd>${esc(o.address)}</dd><dt>Phone</dt><dd><span class="num">${esc(o.phone)}</span><button class="copy" onclick="copyText('${esc(o.phone)}',this)">Copy</button></dd><dt>Fax</dt><dd>${val(o.fax)}</dd><dt>Broker license #</dt><dd>${val(o.license)}</dd><dt>Hours</dt><dd>${o.hours?esc(o.hours):'<span class="todo">Needed</span>'}</dd></dl></div>`).join("")}</div></section>
+  <section class="card"><div class="bhead"><h3 style="margin:0">WiFi</h3><span class="note">Agents only</span></div><div class="tw"><table><thead><tr><th>Location</th><th>Network</th><th>Password</th></tr></thead><tbody>${CONTENT.wifi.map(w=>`<tr><td>${esc(w.location)}</td><td>${w.network?esc(w.network):'<span class="todo">Needed</span>'}</td><td class="num">${w.password?esc(w.password):"—"}</td></tr>`).join("")}</tbody></table></div></section>
+  <section><h3 class="st">Brokers</h3><div class="grid g3">${CONTENT.brokers.filter(b=>STATE_FILTER==="ALL"||b.scope.includes(STATE_FILTER)).map(person).join("")}</div></section>
+  <section><h3 class="st">Market center leadership</h3><div class="grid g3">${CONTENT.leadership.map(person).join("")}</div></section>
+  <section class="card"><div class="bhead"><h3 style="margin:0">Frequently asked</h3></div>${CONTENT.faq.map((f,i)=>`<details style="border-bottom:1px solid var(--line);padding:12px 18px"><summary style="cursor:pointer;font-weight:600">${esc(f.q)}</summary><p style="margin:8px 0 0;color:var(--muted)">${f.a?esc(f.a):'<span class="todo">Answer needed</span>'}</p></details>`).join("")}</section>`;
+};
+
+/* ---------------- NJ vs PA ---------------- */
+PAGES.njpa = v => {
+  v.innerHTML = head("Cross-state guide","NJ vs PA","Working both sides of the bridge — the differences that change how you write, disclose and close.")+`
+  <div class="card"><div class="tw"><table><thead><tr><th style="width:26%">Topic</th><th><span class="pill pa">PA</span> Pennsylvania</th><th><span class="pill nj">NJ</span> New Jersey</th></tr></thead><tbody>
+  ${CONTENT.njpa.map(r=>`<tr><td style="font-weight:600">${esc(r.topic)}</td><td>${r.pa?esc(r.pa):'<span class="todo">Broker review</span>'}</td><td>${r.nj?esc(r.nj):'<span class="todo">Broker review</span>'}</td></tr>`).join("")}</tbody></table></div></div>
+  <p class="note">Content is added after broker review so every answer matches how our two brokerages actually operate.</p>`;
+};
+
+/* ---------------- REALTOR ASSOCIATIONS ---------------- */
+PAGES.assoc = v => {
+  const list=CONTENT.associations.filter(a=>stOK(a.st));
+  v.innerHTML = head("Where to find it","Realtor Associations","National, state and local REALTOR® associations — for forms, ethics, dues, education, market stats and local rules.")+`
+  <div class="grid g2">${list.map(a=>`<article class="card pad" style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;gap:14px;align-items:center"><div style="width:56px;height:56px;border-radius:12px;background:var(--red-soft);color:var(--red);display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:${a.short.length>5?11.5:a.short.length>3?15:18}px;letter-spacing:.02em;flex:none">${esc(a.short)}</div>
+      <div style="min-width:0"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="pill">${esc(a.level)}</span>${a.st!=="BOTH"?stPill(a.st):""}</div><h3 class="st" style="margin:4px 0 0">${esc(a.name)}</h3></div></div>
+    <p style="margin:0;font-size:14px;color:var(--muted)">${esc(a.desc)}</p>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${a.tags.map(t=>`<span class="pill" style="background:var(--sunken)">${esc(t)}</span>`).join("")}</div>
+    ${a.links&&a.links.length?`<div style="border:1px solid var(--line);border-radius:8px;overflow:hidden">${a.links.map(l=>`<a class="li" style="padding:8px 12px" href="${esc(l.url)}" target="_blank" rel="noopener"><span class="t">${esc(l.name)}</span>${svg("ext",'width="13" height="13"')}</a>`).join("")}</div>`:""}
+    ${a.phone||a.address?`<dl class="kv" style="font-size:13.5px">${a.phone?`<dt>Phone</dt><dd><span class="num">${esc(a.phone)}</span><button class="copy" onclick="copyText('${esc(a.phone)}',this)">Copy</button></dd>`:""}${a.address?`<dt>Office</dt><dd>${esc(a.address)}</dd>`:""}</dl>`:""}
+    <div style="margin-top:auto">${a.url?`<a class="btn primary sm" href="${esc(a.url)}" target="_blank" rel="noopener">Open ${esc(a.short)} site ${svg("ext",'width="13" height="13"')}</a>`:TODO}</div>
+  </article>`).join("")||`<div class="empty">No associations listed for ${STATE_FILTER} yet.</div>`}</div>`;
+};
+
+/* ---------------- SUGGESTION BOX (anonymous) ---------------- */
+PAGES.suggest = v => {
+  v.innerHTML = head("Anonymous","Suggestion Box","Share an idea, a concern or a compliment with office leadership.")+`
+  <div class="card pad" style="display:flex;gap:14px;align-items:flex-start;border-color:var(--ok);background:var(--ok-soft)">
+    <span style="line-height:1" aria-hidden="true">${svg("shield",'width="24" height="24" style="color:var(--ok)"')}</span>
+    <div><b style="color:var(--ok);font-size:15.5px">This suggestion box is completely anonymous.</b>
+    <p style="margin:4px 0 0;font-size:14px">The form never asks for your name, email or phone, and no login is needed — only what you type is sent. To stay anonymous, leave your name and other identifying details out of what you write.</p></div></div>
+  <div class="card pad" style="display:flex;flex-direction:column;gap:12px;align-items:flex-start">
+    <h3 class="st" style="margin:0">Send a suggestion</h3>
+    <p class="note" style="margin:0">Pick a topic, add your comment and press <b>Send anonymously</b>. The form opens in a new tab.</p>
+    <a class="btn primary" href="${esc(CONTENT.suggestionForm)}" target="_blank" rel="noopener">Open the anonymous suggestion form ${svg("ext",'width="14" height="14"')}</a>
+  </div>`;
+};
+
+/* ---------------- KW LUXURY ---------------- */
+PAGES.luxury = v => {
+  const sec=(t,body)=>`<section class="card pad"><h3 class="st">${t}</h3>${body}</section>`;
+  const ul=a=>`<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14.5px">${a.map(x=>`<li>${x}</li>`).join("")}</ul>`;
+  v.innerHTML = `<section class="hero" style="background:linear-gradient(135deg,#0F1013 0%,#1E2027 70%,#3A2E1F 140%)"><div style="position:relative;z-index:1;display:flex;flex-direction:column;gap:12px"><img src="files/36bc03d9fe8820237412e81015c91151.svg" alt="KW Luxury" style="width:min(320px,70vw);height:auto"><p style="margin:0">How to earn the KW Luxury designation, what you get once you're in, and how your luxury listings are promoted.</p></div><a class="btn" href="files/1ed7f6624f084352c4a4e3f1815e268d.pdf" data-name="KW Luxury FAQs">${svg("forms",'width="16" height="16"')} Full KW Luxury FAQ (PDF)</a></section>
+  <div class="grid g2" style="align-items:start">
+    ${sec("How to earn in",`<ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14.5px"><li>Close <b>4 or more transactions at your local luxury threshold within 24 months</b>. Thresholds are set by regional leadership at the top 10% of transactions in each county.</li><li>Ask market center leadership for your county's threshold number.</li><li>Once you hit 4 closings, MC leadership approves you in <b>Command MC</b> and the designation turns on. Some market centers approve automatically.</li><li>Watch for a welcome email from <b>luxury@kw.com</b> with your invitation to <b>Circle</b>, where all KW Luxury resources live.</li></ol>`)}
+    ${sec("What you get",ul(["Circle access: pre-listing presentation, luxury LORE stats, the “Why Work With KW Luxury” buyer flyer and branding kits","Automatic listing syndication to WSJ, MarketWatch, JamesEdition, Mansion Global and Barron's/Penta ($1M+ for the last two)","Chance to be featured on KW Luxury social media and in <i>The Residence</i> digital magazine","Member search in Circle to connect with luxury agents for referrals"]))}
+    ${sec("Listing syndication checklist",`<p class="note" style="margin:0 0 8px">Syndication is automatic when the listing is:</p>${ul(["Active in the MLS","Active in Command","At or above your local luxury threshold","JamesEdition needs at least 2 listing photos"])}`)}
+    ${sec("Training & networking",ul(["<b>KW Luxury Training Call</b> — first Wednesday of every month, 10:00 AM Central (11:00 AM Eastern), on Zoom. Free.","<b>The Luxury Workshop</b> — monthly, in a different city each time. $150; free for KW Luxury Pro members.","<b>KW Luxury Symposium</b> — the division's main event, held every October.","<b>KW Luxury Pro</b> — optional paid membership with extra promotion (WSJ feature consideration, JamesEdition Elite, recommended-agent placement on luxury.kw.com)."]))}
+  </div>
+  <div class="card pad" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">
+    <div><h3 class="st" style="margin:0 0 6px">Questions?</h3><dl class="kv"><dt>KW Luxury team</dt><dd><span>luxury@kw.com</span><button class="copy" onclick="copyText('luxury@kw.com',this)">Copy</button></dd><dt>Director of Operations</dt><dd><span>Emily Randolph · emily.randolph@kw.com</span><button class="copy" onclick="copyText('emily.randolph@kw.com',this)">Copy</button></dd></dl></div>
+    <a class="btn primary sm" href="https://luxury.kw.com/agents" target="_blank" rel="noopener">Find KW Luxury agents ${svg("ext",'width="13" height="13"')}</a>
+  </div>`;
+};
+
+/* ---------------- ASCEND ---------------- */
+PAGES.ascend = v => {
+  const A=CONTENT.ascend;
+  v.innerHTML = `<section class="hero" style="background:radial-gradient(120% 140% at 100% 0%,#3A3F4D 0%,#1A1B22 55%,#8E0E19 140%)"><div style="position:relative;z-index:1"><div class="eyebrow" style="color:#FF8A90">Members</div><h2>Rising Stars</h2><p>${esc(A.lede)}</p></div></section>
+  <div class="grid g2">${A.links.map(l=>`<div class="card pad" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><b>${esc(l.name)}</b>${l.url?`<a class="btn sm" href="${esc(l.url)}" data-name="${esc(l.name)}" target="_blank" rel="noopener">Open ${svg("ext",'width="13" height="13"')}</a>`:TODO}</div>`).join("")}</div>
+  <div class="card pad" style="display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));align-items:start">
+    <div><div class="eyebrow" style="margin-bottom:4px">${esc(A.director.role)}</div><h3 class="st" style="margin:0 0 10px;font-size:24px">${esc(A.director.name)}</h3>
+      <dl class="kv">${A.director.phone?`<dt>Phone</dt><dd><span class="num">${esc(A.director.phone)}</span><button class="copy" onclick="copyText('${esc(A.director.phone)}',this)">Copy</button></dd>`:""}${A.director.email?`<dt>Email</dt><dd><span>${esc(A.director.email)}</span><button class="copy" onclick="copyText('${esc(A.director.email)}',this)">Copy</button></dd>`:""}</dl>
+      ${A.director.tagline?`<div style="margin-top:14px;font-family:var(--display);font-weight:850;font-size:22px;color:var(--red)">${esc(A.director.tagline)}</div>`:""}</div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:14.5px">${(A.director.bio||[]).map(x=>`<p style="margin:0">${x}</p>`).join("")}
+      <p class="note" style="margin:4px 0 0">Want to join Rising Stars or book a coaching session? Reach out to Hope.</p></div>
+  </div>`;
+};
+
+/* ---------------- DEAL ANALYZER ---------------- */
+const EXP = [["taxes","Property taxes"],["insurance","Insurance"],["electric","Electric",1],["water","Water",1],["sewer","Sewer",1],["gas","Gas",1],["oil","Oil",1],["hoa","HOA / condo fees"],["lawn","Lawn service"],["repairs","Repairs & maintenance"],["capex","CapEx reserves"],["mgmt","Property management"],["misc","Miscellaneous"]];
+const OTHER = [["commercial","Commercial / shop"],["parking","Parking"],["laundry","Laundry"],["miscInc","Miscellaneous"]];
+function newDeal(example){
+  const base={id:"d"+Date.now().toString(36), name:"New property", type:"Single family", units:[""], price:"", value:"", arv:"", rehab:"", closing:"", otherAcq:"", sqft:"", notes:"",
+    other:{}, otherCounts:{}, vacancy:"5", exp:{}, util:{}, fin:{down:"20", rate:"7.5", term:"30", io:false, fees:""}, minDscr:"1.0", updated:Date.now()};
+  if(example) Object.assign(base,{name:"123 Main Street (example)", type:"Duplex", units:["1750","1750"], price:"240000", value:"240000", arv:"275000", closing:"15000", other:{miscInc:"200"}, vacancy:"0",
+    exp:{taxes:{v:"475",per:"mo"},insurance:{v:"125",per:"mo"},repairs:{v:"300",per:"mo"},capex:{v:"150",per:"mo"},mgmt:{v:"150",per:"mo"}}, fin:{down:"15",rate:"7.5",term:"30",io:false,fees:""}, minDscr:"0.75", example:true});
+  return base;
+}
+function dealCalc(d,over={}){
+  const rentAdj=over.rentAdj??1, rateAdd=over.rateAdd??0, vacAdd=over.vacAdd??0, expAdj=over.expAdj??1;
+  const price=over.price??nf(d.price);
+  const rents=d.units.reduce((s,u)=>s+nf(u),0)*rentAdj;
+  const otherInc=OTHER.reduce((s,[k])=>s+nf(d.other[k]),0);
+  const qualOther=OTHER.reduce((s,[k])=>s+(d.otherCounts[k]?nf(d.other[k]):0),0);
+  const gross=rents+otherInc, qualRent=rents+qualOther;
+  const vac=rents*(nf(d.vacancy)+vacAdd)/100;
+  const line=k=>{ const e=d.exp[k]; if(!e) return 0; return nf(e.v)/(e.per==="yr"?12:1); };
+  let opex=vac; EXP.forEach(([k,,u])=>{ if(u && d.util[k]==="tenant") return; opex+=line(k)*(k==="taxes"||k==="insurance"||k==="hoa"?1:expAdj); });
+  const noi=gross-opex;
+  const down=price*nf(d.fin.down)/100, loan=price-down;
+  const rate=nf(d.fin.rate)+rateAdd, r=rate/1200, n=Math.max(1,nf(d.fin.term))*12;
+  const pi = loan<=0?0 : d.fin.io ? loan*r : (r===0? loan/n : loan*r/(1-Math.pow(1+r,-n)));
+  const pitia=pi+line("taxes")+line("insurance")+line("hoa");
+  const cf=noi-pi, cash=down+nf(d.closing)+nf(d.rehab)+nf(d.otherAcq)+nf(d.fin.fees);
+  return {price,rents,otherInc,gross,qualRent,vac,opex,noi,down,loan,pi,pitia,cf,cash,
+    coc: cash>0? cf*12/cash : NaN, cap: price>0? noi*12/price : NaN, dscr: pitia>0? qualRent/pitia : NaN,
+    grm: gross>0? price/(gross*12):NaN, ltv: price>0? loan/price:NaN, breakeven: gross>0?(opex-vac+pi)/gross:NaN,
+    zeroRent: opex-vac+pi-otherInc, minQual: pitia*nf(d.minDscr||1)};
+}
+PAGES.deals = async v => {
+  v.innerHTML = head("Investor tools","Deal Analyzer","Every property has a story. Know the numbers.")+`<div class="empty">Loading your analyses…</div>`;
+  let S = await store.load("deals") || {list:[]}; S.list=S.list||[];
+  let cur=null, tab="analyze";
+  const persist=()=>store.save("deals",S,savedMsg($("#dSave")));
+  const list=()=>{
+    v.innerHTML = head("Investor tools","Deal Analyzer","Analyze rental income, financing, cash flow and returns in one place.")+`
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn primary" id="dNew">${svg("plus",'width="16" height="16"')} New analysis</button>${S.list.length?"":`<button class="btn" id="dEx">Load the example</button>`}<span class="save-state" id="dSave" style="margin-left:auto">${P.uid?"Private to you":"Saves on this device"}</span></div>
+    <section><h3 class="st">My investment analyses</h3>${S.list.length?`<div class="grid g3">${[...S.list].sort((a,b)=>b.updated-a.updated).map(d=>{ const c=dealCalc(d); return `<div class="card pad" style="display:flex;flex-direction:column;gap:10px"><div><b style="font-size:15.5px">${esc(d.name)}</b>${d.example?' <span class="pill">Example</span>':""}<div class="note">${esc(d.type)} · ${money(nf(d.price))}</div></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px"><div><div class="note">RENT</div><b class="num">${money(c.gross)}</b></div><div><div class="note">CASH FLOW</div><b class="num" style="color:${c.cf>=0?"var(--ok)":"var(--bad)"}">${money(c.cf)}</b></div><div><div class="note">COC</div><b class="num">${pct(c.coc)}</b></div></div>
+      <div class="note">Updated ${new Date(d.updated).toLocaleDateString()}</div><div style="display:flex;gap:6px"><button class="btn sm" data-open="${d.id}">Open analysis</button><button class="iconbtn" data-del="${d.id}" title="Delete analysis" aria-label="Delete analysis">${svg("trash")}</button></div></div>`; }).join("")}</div>`
+      :`<div class="empty">No analyses yet. Start a new one, or load the 123 Main Street example to see how it works.</div>`}</section>`;
+    $("#dNew").onclick=()=>{ const d=newDeal(false); S.list.push(d); persist(); cur=d; tab="analyze"; editor(); };
+    const ex=$("#dEx"); if(ex) ex.onclick=()=>{ const d=newDeal(true); S.list.push(d); persist(); cur=d; tab="analyze"; editor(); };
+    v.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{ cur=S.list.find(d=>d.id===b.dataset.open); tab="analyze"; editor(); });
+    v.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>confirmDel(b,()=>{ S.list=S.list.filter(d=>d.id!==b.dataset.del); persist(); list(); }));
+  };
+  const touch=()=>{ cur.updated=Date.now(); persist(); };
+  const editor=()=>{
+    const d=cur;
+    v.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn sm ghost" id="dBack">← My analyses</button><span class="save-state" id="dSave" style="margin-left:auto">${P.uid?"Private to you":"Saves on this device"}</span></div>
+      <div class="ph"><div class="eyebrow">Deal Analyzer</div><h2 class="pt" id="dTitle">${esc(d.name)}</h2><p class="lede">${esc(d.type)} · detailed analysis</p></div>
+      <div class="tabs" role="tablist">${[["analyze","Analyze"],["compare","Compare"],["stress","Stress test"],["max","Max price"],["brrrr","BRRRR"]].map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" data-t="${k}">${l}</button>`).join("")}</div><div id="dBody"></div>`;
+    $("#dBack").onclick=list;
+    v.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tab=b.dataset.t;editor();});
+    ({analyze,compare,stress,max:maxPrice,brrrr})[tab]();
+  };
+  const F=(id,label,val,pre="$",suf="",attrs="")=>`<label class="f">${label}<div class="in">${pre?`<span>${pre}</span>`:""}<input id="${id}" ${attrs} inputmode="decimal" placeholder="0" value="${esc(val)}">${suf?`<span class="suf">${suf}</span>`:""}</div></label>`;
+  const metrics=()=>{ const c=dealCalc(cur); const S=$("#dStats"); if(!S) return;
+    const dscrOk=c.dscr>=nf(cur.minDscr||1);
+    S.innerHTML=`<div class="stats">
+      <div class="stat card hot"><small>Monthly cash flow</small><b class="num" style="color:${c.cf>=0?"#7EE2A8":"#FF8A80"}">${money(c.cf)}</b></div>
+      <div class="stat card"><small>Annual cash flow</small><b>${money(c.cf*12)}</b></div><div class="stat card"><small>Cash-on-cash</small><b>${pct(c.coc)}</b></div>
+      <div class="stat card"><small>Cap rate</small><b>${pct(c.cap)}</b></div><div class="stat card"><small>DSCR</small><b>${isFinite(c.dscr)?c.dscr.toFixed(2):"—"}</b></div><div class="stat card"><small>Total cash required</small><b>${money(c.cash)}</b></div></div>
+      <div class="card pad" style="margin-top:12px;display:flex;gap:12px;align-items:center;border-color:${dscrOk?"var(--ok)":"var(--warn)"};background:${dscrOk?"var(--ok-soft)":"var(--warn-soft)"}"><b style="color:${dscrOk?"var(--ok)":"var(--warn)"}">${dscrOk?"Meets":"Below"} the ${nf(cur.minDscr||1).toFixed(2)} DSCR threshold</b><span class="note">Preliminary only — final terms depend on lender underwriting.</span></div>
+      <div class="card" style="margin-top:12px"><div class="tw"><table><thead><tr><th></th><th class="r">Monthly</th><th class="r">Annual</th></tr></thead><tbody>
+      ${[["Gross income",c.gross],["Operating expenses",c.opex],["Net operating income",c.noi,1],["Mortgage payment",c.pi],["Cash flow after debt",c.cf,1]].map(([l,x,b])=>`<tr style="${b?"font-weight:700":""}"><td>${l}</td><td class="r num">${money(x)}</td><td class="r num">${money(x*12)}</td></tr>`).join("")}</tbody></table></div>
+      <div class="pad" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;font-size:13.5px">
+        <div><span class="note">Gross rent multiplier</span><br><b class="num">${isFinite(c.grm)?c.grm.toFixed(2):"—"}</b></div><div><span class="note">Loan-to-value</span><br><b class="num">${pct(c.ltv)}</b></div>
+        <div><span class="note">Break-even occupancy</span><br><b class="num">${pct(c.breakeven)}</b></div><div><span class="note">Rent for $0 cash flow</span><br><b class="num">${money(c.zeroRent)}</b></div>
+        <div><span class="note">Loan amount</span><br><b class="num">${money(c.loan)}</b></div><div><span class="note">Qualifying payment (PITIA)</span><br><b class="num">${money(c.pitia)}</b></div><div><span class="note">Min. qualifying rent</span><br><b class="num">${money(c.minQual)}</b></div><div><span class="note">Qualifying rent</span><br><b class="num">${money(c.qualRent)}</b></div></div></div>`;
+    const t=$("#incTot"); if(t) t.textContent=money(c.gross)+"/mo"; const e=$("#expTot"); if(e) e.textContent=money(c.opex)+"/mo";
+  };
+  const analyze=()=>{
+    const d=cur, b=$("#dBody");
+    b.innerHTML=`<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr));align-items:start">
+    <div class="grid">
+      <div class="card pad"><h3 class="st">1. Property details</h3><div class="fields">
+        <label class="f" style="grid-column:1/-1">Property address<input class="plain" id="d_name" value="${esc(d.name)}"></label>
+        <label class="f">Property type<select class="plain" id="d_type">${["Single family","Duplex","Triplex","Fourplex","Multifamily 5+","Condo / townhome","Mixed use","Commercial"].map(t=>`<option ${t===d.type?"selected":""}>${t}</option>`).join("")}</select></label>
+        ${F("d_price","Purchase price",d.price)}${F("d_value","Est. current value",d.value)}${F("d_arv","After repair value",d.arv)}${F("d_rehab","Rehab budget",d.rehab)}${F("d_closing","Closing costs",d.closing)}${F("d_otherAcq","Other acquisition",d.otherAcq)}${F("d_sqft","Square footage",d.sqft,"","sq ft")}
+        <label class="f" style="grid-column:1/-1">Notes<textarea class="plain" id="d_notes" rows="2">${esc(d.notes)}</textarea></label></div></div>
+      <div class="card pad"><h3 class="st" style="display:flex;justify-content:space-between">2. Income <span class="num note" id="incTot"></span></h3>
+        <div class="fields" id="unitF">${d.units.map((u,i)=>F("u_"+i,`Unit ${i+1} rent`,u,"$","/mo",`data-unit="${i}"`)).join("")}</div>
+        <div style="display:flex;gap:8px;margin:10px 0 14px"><button class="btn sm" id="addU">${svg("plus",'width="14" height="14"')} Add unit</button>${d.units.length>1?`<button class="btn sm ghost" id="rmU">Remove last unit</button>`:""}</div>
+        <div class="fields">${OTHER.map(([k,l])=>`<div>${F("o_"+k,l+" income",d.other[k]||"","$","/mo",`data-oth="${k}"`)}<label style="display:flex;gap:6px;align-items:center;font-size:12.5px;margin-top:4px;color:var(--muted)"><input type="checkbox" id="oc_${k}" data-oc="${k}" ${d.otherCounts[k]?"checked":""}> Counts for DSCR</label></div>`).join("")}</div></div>
+      <div class="card pad"><h3 class="st" style="display:flex;justify-content:space-between">3. Operating expenses <span class="num note" id="expTot"></span></h3>
+        <div class="fields">${F("d_vacancy","Vacancy allowance",d.vacancy,"","% of rent")}</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">${EXP.map(([k,l,u])=>{ const e=d.exp[k]||{}; const ten=u&&d.util[k]==="tenant"; return `<div style="display:grid;grid-template-columns:minmax(0,1fr) 120px 64px ${u?"86px":""};gap:6px;align-items:center;${ten?"opacity:.55":""}"><span style="font-size:14px">${l}${ten?' <span class="note">· tenant paid</span>':""}</span>
+          <div class="in"><span>$</span><input id="e_${k}" data-exp="${k}" inputmode="decimal" placeholder="0" value="${esc(e.v||"")}" aria-label="${l}"></div>
+          <select class="plain" id="ep_${k}" data-per="${k}" style="padding:8px 4px" aria-label="${l} period"><option value="mo" ${e.per!=="yr"?"selected":""}>/mo</option><option value="yr" ${e.per==="yr"?"selected":""}>/yr</option></select>
+          ${u?`<select class="plain" id="ut_${k}" data-util="${k}" style="padding:8px 4px" aria-label="Who pays ${l}"><option value="owner" ${!ten?"selected":""}>Owner</option><option value="tenant" ${ten?"selected":""}>Tenant</option></select>`:""}</div>`; }).join("")}</div></div>
+      <div class="card pad"><h3 class="st">4. Financing</h3><div class="fields">
+        ${F("f_down","Down payment",d.fin.down,"","%")}${F("f_rate","Interest rate",d.fin.rate,"","%")}
+        <label class="f">Loan term<select class="plain" id="f_term">${["15","20","25","30","40"].map(t=>`<option value="${t}" ${t===String(d.fin.term)?"selected":""}>${t} years</option>`).join("")}</select></label>
+        <label class="f">Amortization<select class="plain" id="f_io"><option value="pi" ${!d.fin.io?"selected":""}>Principal & interest</option><option value="io" ${d.fin.io?"selected":""}>Interest only</option></select></label>
+        ${F("f_fees","Lender fees & reserves",d.fin.fees)}${F("f_dscr","Lender min. DSCR",d.minDscr,"","×")}</div></div>
+    </div>
+    <div style="position:sticky;top:76px"><div class="eyebrow" style="margin-bottom:8px">Investment performance · live</div><div id="dStats"></div></div></div>`;
+    const bind=(id,fn)=>{ const el=$("#"+id); if(el) el.addEventListener(el.tagName==="SELECT"||el.type==="checkbox"?"change":"input",()=>{ fn(el); touch(); metrics(); }); };
+    ["price","value","arv","rehab","closing","otherAcq","sqft","notes","vacancy"].forEach(k=>bind("d_"+k,el=>d[k]=el.value));
+    bind("d_name",el=>{ d.name=el.value; $("#dTitle").textContent=el.value; }); bind("d_type",el=>d.type=el.value);
+    b.querySelectorAll("[data-unit]").forEach(el=>el.addEventListener("input",()=>{ d.units[+el.dataset.unit]=el.value; touch(); metrics(); }));
+    b.querySelectorAll("[data-oth]").forEach(el=>el.addEventListener("input",()=>{ d.other[el.dataset.oth]=el.value; touch(); metrics(); }));
+    b.querySelectorAll("[data-oc]").forEach(el=>el.addEventListener("change",()=>{ d.otherCounts[el.dataset.oc]=el.checked; touch(); metrics(); }));
+    b.querySelectorAll("[data-exp]").forEach(el=>el.addEventListener("input",()=>{ const k=el.dataset.exp; d.exp[k]=Object.assign(d.exp[k]||{per:"mo"},{v:el.value}); touch(); metrics(); }));
+    b.querySelectorAll("[data-per]").forEach(el=>el.addEventListener("change",()=>{ const k=el.dataset.per; d.exp[k]=Object.assign(d.exp[k]||{},{per:el.value}); touch(); metrics(); }));
+    b.querySelectorAll("[data-util]").forEach(el=>el.addEventListener("change",()=>{ d.util[el.dataset.util]=el.value; touch(); analyze(); }));
+    bind("f_down",el=>d.fin.down=el.value); bind("f_rate",el=>d.fin.rate=el.value); bind("f_term",el=>d.fin.term=el.value); bind("f_io",el=>d.fin.io=el.value==="io"); bind("f_fees",el=>d.fin.fees=el.value); bind("f_dscr",el=>d.minDscr=el.value);
+    $("#addU").onclick=()=>{ d.units.push(""); touch(); analyze(); };
+    const rm=$("#rmU"); if(rm) rm.onclick=()=>{ d.units.pop(); touch(); analyze(); };
+    metrics();
+  };
+  const compare=()=>{
+    const rows=[["Price",c=>money(c.price)],["Gross rent / mo",c=>money(c.gross)],["Expenses / mo",c=>money(c.opex)],["NOI / mo",c=>money(c.noi)],["Mortgage / mo",c=>money(c.pi)],["Cash flow / mo",c=>money(c.cf)],["Cash required",c=>money(c.cash)],["Cash-on-cash",c=>pct(c.coc)],["Cap rate",c=>pct(c.cap)],["DSCR",c=>isFinite(c.dscr)?c.dscr.toFixed(2):"—"]];
+    const cs=S.list.map(d=>({d,c:dealCalc(d)}));
+    $("#dBody").innerHTML = cs.length<2?`<div class="empty">Save at least two analyses to compare them side by side.</div>`:`<div class="card"><div class="tw"><table><thead><tr><th>Metric</th>${cs.map(x=>`<th class="r">${esc(x.d.name)}</th>`).join("")}</tr></thead><tbody>${rows.map(([l,f])=>`<tr><td>${l}</td>${cs.map(x=>`<td class="r num" style="${x.d.id===cur.id?"font-weight:700":""}">${f(x.c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>`;
+  };
+  const stress=()=>{
+    const sc=[["Base case",{}],["Rate +1%",{rateAdd:1}],["Rate +2%",{rateAdd:2}],["Rents −10%",{rentAdj:.9}],["Vacancy +5 pts",{vacAdd:5}],["Expenses +15%",{expAdj:1.15}],["Combined: rate +1%, rents −10%, vacancy +5",{rateAdd:1,rentAdj:.9,vacAdd:5}]];
+    $("#dBody").innerHTML=`<div class="card"><div class="tw"><table><thead><tr><th>Scenario</th><th class="r">Cash flow / mo</th><th class="r">Cash-on-cash</th><th class="r">DSCR</th><th>Status</th></tr></thead><tbody>${sc.map(([l,o])=>{ const c=dealCalc(cur,o); const ok=c.cf>=0&&c.dscr>=nf(cur.minDscr||1); return `<tr><td>${l}</td><td class="r num" style="color:${c.cf>=0?"var(--ok)":"var(--bad)"}">${money(c.cf)}</td><td class="r num">${pct(c.coc)}</td><td class="r num">${isFinite(c.dscr)?c.dscr.toFixed(2):"—"}</td><td><span class="pill" style="${ok?"background:var(--ok-soft);color:var(--ok)":"background:var(--warn-soft);color:var(--warn)"}">${ok?"Holds":"At risk"}</span></td></tr>`; }).join("")}</tbody></table></div></div>
+    <p class="note">“Holds” means cash flow stays positive and DSCR stays at or above the lender minimum.</p>`;
+  };
+  const maxPrice=()=>{
+    const b=$("#dBody"); cur.max=cur.max||{metric:"coc",target:"10"};
+    const solve=()=>{ const t=nf(cur.max.target); const met=c=>cur.max.metric==="coc"?c.coc*100:cur.max.metric==="cf"?c.cf:c.dscr;
+      let lo=1000, hi=Math.max(nf(cur.price),nf(cur.value),100000)*4; if(!(met(dealCalc(cur,{price:lo}))>=t)) return null;
+      for(let i=0;i<60;i++){ const mid=(lo+hi)/2; if(met(dealCalc(cur,{price:mid}))>=t) lo=mid; else hi=mid; } return lo; };
+    const draw=()=>{ const p=solve(); const c=p?dealCalc(cur,{price:p}):null;
+      $("#mxOut").innerHTML = p?`<div class="stats"><div class="stat card hot"><small>Maximum offer</small><b class="num">${money(Math.floor(p/500)*500)}</b></div><div class="stat card"><small>vs. purchase price</small><b>${nf(cur.price)?money(p-nf(cur.price)):"—"}</b></div><div class="stat card"><small>Cash flow at max</small><b>${money(c.cf)}</b></div><div class="stat card"><small>Cash-on-cash at max</small><b>${pct(c.coc)}</b></div><div class="stat card"><small>DSCR at max</small><b>${c.dscr.toFixed(2)}</b></div></div>`
+        :`<div class="empty">No price reaches that target with the current rents, expenses and financing.</div>`; };
+    b.innerHTML=`<div class="card pad"><h3 class="st">Find the highest price that still hits your target</h3><div class="fields">
+      <label class="f">Target<select class="plain" id="mx_m"><option value="coc">Cash-on-cash return (%)</option><option value="cf">Monthly cash flow ($)</option><option value="dscr">DSCR (×)</option></select></label>
+      <label class="f">Target value<input class="plain" id="mx_t" inputmode="decimal" value="${esc(cur.max.target)}"></label></div>
+      <p class="note" style="margin:10px 0 0">Uses this property's rents, expenses, down payment %, rate and closing costs.</p></div><div id="mxOut"></div>`;
+    $("#mx_m").value=cur.max.metric;
+    $("#mx_m").onchange=e=>{cur.max.metric=e.target.value; touch(); draw();}; $("#mx_t").oninput=e=>{cur.max.target=e.target.value; touch(); draw();};
+    draw();
+  };
+  const brrrr=()=>{
+    const b=$("#dBody"); cur.br=cur.br||{ltv:"75",rate:cur.fin.rate||"7.5",term:"30",costs:""};
+    const draw=()=>{ const c=dealCalc(cur), arv=nf(cur.arv), br=cur.br;
+      const newLoan=arv*nf(br.ltv)/100, payoff=c.loan, cashOut=newLoan-payoff-nf(br.costs), left=c.cash-cashOut;
+      const r=nf(br.rate)/1200, n=nf(br.term)*12, pi=newLoan<=0?0:(r===0?newLoan/n:newLoan*r/(1-Math.pow(1+r,-n)));
+      const cf=c.noi-pi;
+      $("#brOut").innerHTML = !arv?`<div class="empty">Add the after repair value (ARV) in Analyze to run the BRRRR refinance.</div>`:`<div class="stats">
+        <div class="stat card"><small>Refi loan</small><b>${money(newLoan)}</b></div><div class="stat card"><small>Pays off</small><b>${money(payoff)}</b></div><div class="stat card"><small>Cash back at refi</small><b>${money(cashOut)}</b></div>
+        <div class="stat card hot"><small>Cash left in deal</small><b class="num">${money(Math.max(0,left))}</b></div><div class="stat card"><small>New cash flow / mo</small><b style="color:${cf>=0?"var(--ok)":"var(--bad)"}">${money(cf)}</b></div>
+        <div class="stat card"><small>Return on cash left</small><b>${left<=0?"Infinite":pct(cf*12/left)}</b></div></div>`; };
+    b.innerHTML=`<div class="card pad"><h3 class="st">Buy, rehab, rent, refinance, repeat</h3><div class="fields">
+      ${F("br_ltv","Refi LTV",cur.br.ltv,"","%")}${F("br_rate","Refi rate",cur.br.rate,"","%")}${F("br_term","Refi term",cur.br.term,"","yrs")}${F("br_costs","Refi closing costs",cur.br.costs)}</div>
+      <p class="note" style="margin:10px 0 0">ARV ${money(nf(cur.arv))} · total cash in ${money(dealCalc(cur).cash)} (purchase down payment, closing, rehab and fees).</p></div><div id="brOut"></div>`;
+    [["ltv"],["rate"],["term"],["costs"]].forEach(([k])=>$("#br_"+k).addEventListener("input",e=>{cur.br[k]=e.target.value; touch(); draw();}));
+    draw();
+  };
+  list();
+};
+
+/* ---------------- CONTINUING ED ---------------- */
+/* Training calendar — events copied from the Teamup feed (refresh with cal/build_cal.py) */
+const CALDATA = /*CAL_START*/{"updated":"","events":[]}/*CAL_END*/;
+const CALCOL = {"Holidays":"#8A8F98","Hybrid Learning":"#E2B800","Lunch & Learn":"#2E8B2E","Monthly Sales Meeting":"#6A2C91","Networking":"#E8711A","Regional Events":"#3A3A3A","Regional Training":"#9A6420","Tech Training":"#1F3F9A","Workshop Wednesday":"#C8102E"};
+const calColor = ev => CALCOL[ev.c[ev.c.length-1]] || CALCOL[ev.c[0]] || "#5D616B";
+const fmtT = t => { if(!t) return ""; let [h,m]=t.split(":").map(Number); const ap=h>=12?"PM":"AM"; h=h%12||12; return m?`${h}:${String(m).padStart(2,"0")} ${ap}`:`${h} ${ap}`; };
+const isoD = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+PAGES.calendar = v => {
+  const U=CONTENT.trainingCalendar;
+  v.innerHTML = head("What's happening","Training Calendar","Classes, Lunch & Learns and coaching sessions for both offices — live from Teamup.")+`
+  <div style="display:flex;justify-content:flex-end;margin:-6px 0 12px"><a class="btn sm" href="${esc(U)}" target="_blank" rel="noopener">Open full calendar ${svg("ext",'width="13" height="13"')}</a></div>
+  <section class="card" style="overflow:hidden;padding:0"><iframe src="${esc(U)}?showLogo=0&showSearch=1&showProfileAndInfo=0&showSidepanel=1&showTitle=0&showViewSelector=1&showMenu=0&showAgendaHeader=1&showAgendaDetails=0&showYearViews=0&view=${innerWidth<700?"l":"m"}" title="KWRG training calendar" style="display:block;width:100%;height:min(80vh,860px);border:0;background:#fff"></iframe></section>`;
+};
+
+PAGES.ce = v => {
+  v.innerHTML = head("Free CE","Continuing Education",esc(CONTENT.ce.lede))+`
+  <div class="card pad" style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;max-width:640px">
+    <h3 class="st" style="margin:0">Sign up for free CE</h3>
+    <p class="note" style="margin:0">Use your name exactly as it appears on your real estate license. You'll be asked for your name, best email, license state and license number. The form opens in a new tab.</p>
+    <a class="btn primary" href="${esc(CONTENT.ce.url)}" target="_blank" rel="noopener">Open the CE sign-up form ${svg("ext",'width="14" height="14"')}</a>
+  </div>`;
+};
+
+/* ---------------- KELLERIZED ---------------- */
+PAGES.kellerized = v => {
+  const K=CONTENT.kellerized;
+  v.innerHTML = `<section class="hero" style="background:linear-gradient(135deg,#17181C 0%,#2A2D36 60%,#8E0E19 160%)"><div style="position:relative;z-index:1"><div class="eyebrow" style="color:#FF8A90">Agent stories</div><h2 style="font-stretch:110%;letter-spacing:.02em">KELLERIZED</h2><p>Monthly features on the agents behind the brand — how they built their business and what's working now.</p></div>${K.url?`<a class="btn" href="${esc(K.url)}" target="_blank" rel="noopener">Read the latest issue ${svg("ext",'width="14" height="14"')}</a>`:""}</section>
+  <div class="card pad"><span class="todo">Decision needed</span><p style="margin:8px 0 0">${esc(K.note)}</p></div>`;
+};
+
+/* ---------- document viewer (files stored in the hub) ---------- */
+let PDFJS_READY=null;
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement("script"); s.src=src; s.onload=res; s.onerror=()=>rej(new Error("load")); document.head.appendChild(s); }); }
+function pdfjs(){
+  if(!PDFJS_READY) PDFJS_READY = loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js")
+    .then(()=>loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"))
+    .then(()=>window.pdfjsLib).catch(e=>{ PDFJS_READY=null; throw e; });
+  return PDFJS_READY;
+}
+const slug = s => String(s||"document").replace(/\s*\([^)]*\)\s*/g," ").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,80)||"document";
+let DOC_CLOSE=null;
+async function openDoc(url,name){
+  if(DOC_CLOSE) DOC_CLOSE();
+  const ov=document.createElement("div"); ov.className="docv"; ov.setAttribute("role","dialog"); ov.setAttribute("aria-modal","true"); ov.setAttribute("aria-label",name);
+  ov.innerHTML=`<div class="docv-bar"><b class="docv-t">${esc(name)}</b><span class="docv-n" id="docvN"></span><button class="btn sm primary" id="docvDl" disabled>Download</button><button class="btn sm" id="docvX" aria-label="Close">Close</button></div><div class="docv-body" id="docvBody"><div class="docv-msg">Opening…</div></div>`;
+  document.body.appendChild(ov); document.body.style.overflow="hidden";
+  let alive=true, blob=null, ext="pdf";
+  const close=()=>{ alive=false; ov.remove(); document.body.style.overflow=""; document.removeEventListener("keydown",onKey); DOC_CLOSE=null; };
+  const onKey=e=>{ if(e.key==="Escape") close(); };
+  DOC_CLOSE=close; document.addEventListener("keydown",onKey); $("#docvX").onclick=close; $("#docvX").focus();
+  const body=$("#docvBody");
+  try{
+    const r=await fetch(url); if(!r.ok) throw new Error("http");
+    blob=await r.blob(); if(!alive) return;
+    const ct=(r.headers.get("content-type")||blob.type||"").toLowerCase();
+    ext = ct.includes("pdf")?"pdf":ct.includes("svg")?"svg":ct.includes("png")?"png":ct.includes("jpeg")||ct.includes("jpg")?"jpg":ct.includes("webp")?"webp":"pdf";
+    const dlBtn=$("#docvDl"); dlBtn.disabled=false;
+    dlBtn.onclick=async()=>{
+      const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=slug(name)+"."+ext; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);
+    };
+    if(ext!=="pdf"){
+      body.innerHTML=`<div class="docv-img"><img alt="${esc(name)}" src="${URL.createObjectURL(blob)}"></div>`; return;
+    }
+    const lib=await pdfjs(); if(!alive) return;
+    const doc=await lib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise; if(!alive) return;
+    $("#docvN").textContent=`${doc.numPages} page${doc.numPages>1?"s":""}`;
+    body.innerHTML="";
+    const w=Math.min(body.clientWidth-32,900), dpr=Math.min(window.devicePixelRatio||1,2);
+    for(let i=1;i<=doc.numPages && alive;i++){
+      const page=await doc.getPage(i); const vp0=page.getViewport({scale:1}); const sc=w/vp0.width; const vp=page.getViewport({scale:sc*dpr});
+      const c=document.createElement("canvas"); c.width=vp.width; c.height=vp.height; c.style.width=(vp.width/dpr)+"px"; c.className="docv-page"; c.setAttribute("aria-label",`Page ${i}`);
+      body.appendChild(c); await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
+    }
+  }catch(e){
+    if(alive) body.innerHTML=`<div class="docv-msg">This file couldn't be shown here.${blob?" Use Download to save it and open it on your computer.":" Refresh the hub and try again."}</div>`;
+  }
+}
+document.addEventListener("click",e=>{
+  const a=e.target.closest('a[href^="files/"]'); if(!a) return;
+  e.preventDefault();
+  const name=a.dataset.name || a.querySelector(".t")?.textContent || a.textContent.trim() || "Document";
+  openDoc(a.getAttribute("href"), name.trim());
+});
+
+window.addEventListener("hashchange",()=>{ if(typeof DOC_CLOSE==="function") DOC_CLOSE(); });
+/* ---------- start ---------- */
+route();
+boot();
+</script>
+
+</html>
