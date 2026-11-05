@@ -176,9 +176,12 @@ a.li:hover{background:var(--sunken)}
 .bar i{display:block;height:100%}
 .pgrid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));align-items:start}
 .pcard{display:flex;flex-direction:column;overflow:hidden}
-.ev-flyer{position:relative;display:block;overflow:hidden;padding:0;grid-row:span 2}
-.ev-flyer img{display:block;width:100%;height:100%;max-height:360px;object-fit:cover;object-position:top}
-.ev-flyer span{position:absolute;right:10px;bottom:10px;background:#111;color:#fff;font-size:12.5px;font-weight:700;padding:5px 11px;border-radius:999px}
+.ev.has-flyer{grid-column:1/-1;display:grid;grid-template-columns:200px auto minmax(0,1fr);gap:18px;align-items:start}
+.ev-flyer{position:relative;display:block;border-radius:10px;overflow:hidden;box-shadow:0 6px 16px -6px rgba(0,0,0,.35);transition:transform .2s}
+.ev-flyer:hover{transform:translateY(-3px) rotate(-1deg)}
+.ev-flyer img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover}
+.ev-flyer span{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);white-space:nowrap;background:#111;color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px}
+@media (max-width:640px){.ev.has-flyer{grid-template-columns:auto minmax(0,1fr)}.ev.has-flyer .ev-flyer{grid-column:1/-1;max-width:260px}}
 .calbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .calnav{display:flex;align-items:center;gap:6px}.calnav h3{margin:0 0 0 4px;font-family:var(--display);font-size:22px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
@@ -549,7 +552,7 @@ const CONTENT = {
      Format: {title:"", date:"YYYY-MM-DD", time:"11:00 AM", st:"BOTH"|"PA"|"NJ", where:"", desc:""} */
   events: [
     {title:"KWRG Agent Happy Hour — Cheers to the Season!", date:"2026-11-11", time:"3:00 – 4:00 PM", st:"BOTH", where:"Harvest Seasonal Grill & Wine Bar, Providence Town Center · 51 Town Center Dr, Collegeville", desc:"Come clink glasses with your KWRG crew and kick off the holidays together! Swap stories, toast a great year and just have fun. Pay your own tab — we'll bring the good company.", img:"files/happy-hour-2026-11-11.jpg"},
-    {title:"Watch Party: Cut the Noise, Do More Deals with Jeff Glover", date:"2026-12-03", time:"9:00 AM – 12:30 PM", st:"BOTH", where:"KWRG Office · 400 Arcola Rd, Suite A5, Collegeville", desc:"Watch Jeff Glover's live virtual tour with the KWRG crew: prospecting, open houses, referrals, expireds & FSBOs and AI for leads. Leave with scripts to use that day. Lunch is on us!", img:"files/watch-party-2026-12-03.jpg"}
+    {title:"Watch Party: Cut the Noise, Do More Deals with Jeff Glover", date:"2026-12-03", time:"9:00 AM – 12:30 PM", st:"BOTH", where:"KWRG Office · 400 Arcola Rd, Suite A5, Collegeville", desc:"Watch Jeff Glover's live virtual tour with the KWRG crew: prospecting, open houses, referrals, expireds & FSBOs and AI for leads. Leave with scripts to use that day. Lunch is on us — please RSVP by Mon, Nov 30 so we order enough food.", img:"files/watch-party-2026-12-03.jpg", rsvp:"https://form.jotform.com/263087176582062"}
   ]
 };
 
@@ -756,10 +759,10 @@ function renderEvents(){
   list.innerHTML = evs.length ? evs.map(e=>{
     const d=new Date(e.date+"T12:00:00");
     const when=d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",year:"numeric"})+(e.time?` · ${esc(e.time)}`:"");
-    return `${e.img?`<a class="card ev-flyer" href="${esc(e.img)}" data-name="${esc(e.title)}"><img src="${esc(e.img)}" alt="${esc(e.title)} flyer" loading="lazy"><span>View flyer</span></a>`:""}<article class="card ev"><div class="date"><small>${d.toLocaleDateString("en-US",{month:"short"}).toUpperCase()}</small><b>${d.getDate()}</b></div>
+    return `<article class="card ev ${e.img?"has-flyer":""}">${e.img?`<a class="ev-flyer" href="${esc(e.img)}" data-name="${esc(e.title)}"><img src="${esc(e.img)}" alt="${esc(e.title)} flyer" loading="lazy"><span>View flyer</span></a>`:""}<div class="date"><small>${d.toLocaleDateString("en-US",{month:"short"}).toUpperCase()}</small><b>${d.getDate()}</b></div>
       <div style="min-width:0"><h4>${esc(e.title)}</h4>
       <div class="meta"><span>${svg("cal",'width="13" height="13" style="vertical-align:-2px"')} ${when}</span>${e.where?`<span>${svg("pin",'width="13" height="13" style="vertical-align:-2px"')} ${esc(e.where)}</span>`:""}</div>
-      ${e.desc?`<p>${esc(e.desc)}</p>`:""}${e.st&&e.st!=="BOTH"?`<div style="margin-top:8px">${stPill(e.st)}</div>`:""}</div></article>`; }).join("")
+      ${e.desc?`<p>${esc(e.desc)}</p>`:""}${e.rsvp?`<a class="btn sm" style="margin-top:10px;background:var(--red);border-color:var(--red);color:#fff" href="${esc(e.rsvp)}" target="_blank" rel="noopener">RSVP — save my seat ${svg("ext",'width="12" height="12"')}</a>`:""}${e.st&&e.st!=="BOTH"?`<div style="margin-top:8px">${stPill(e.st)}</div>`:""}</div></article>`; }).join("")
     : `<div class="empty">No upcoming events posted${STATE_FILTER!=="ALL"?` for ${STATE_FILTER}`:""} yet. Check back soon.</div>`;
 }
 function confirmDel(btn,fn){
