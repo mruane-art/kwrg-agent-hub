@@ -176,6 +176,9 @@ a.li:hover{background:var(--sunken)}
 .bar i{display:block;height:100%}
 .pgrid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));align-items:start}
 .pcard{display:flex;flex-direction:column;overflow:hidden}
+.ev-flyer{position:relative;display:block;overflow:hidden;padding:0;grid-row:span 2}
+.ev-flyer img{display:block;width:100%;height:100%;max-height:360px;object-fit:cover;object-position:top}
+.ev-flyer span{position:absolute;right:10px;bottom:10px;background:#111;color:#fff;font-size:12.5px;font-weight:700;padding:5px 11px;border-radius:999px}
 .calbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .calnav{display:flex;align-items:center;gap:6px}.calnav h3{margin:0 0 0 4px;font-family:var(--display);font-size:22px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
@@ -544,7 +547,9 @@ const CONTENT = {
   suggestionForm: "https://form.jotform.com/263084624761056",
   /* Upcoming events — newest additions anywhere; past events hide automatically.
      Format: {title:"", date:"YYYY-MM-DD", time:"11:00 AM", st:"BOTH"|"PA"|"NJ", where:"", desc:""} */
-  events: []
+  events: [
+    {title:"KWRG Agent Happy Hour — Cheers to the Season!", date:"2026-11-11", time:"4:00 – 6:00 PM", st:"BOTH", where:"Harvest Seasonal Grill & Wine Bar, Providence Town Center · 51 Town Center Dr, Collegeville", desc:"Come clink glasses with your KWRG crew and kick off the holidays together! Swap stories, toast a great year and just have fun. Pay your own tab — we'll bring the good company.", img:"files/happy-hour-2026-11-11.jpg"}
+  ]
 };
 
 /* ===================================================================== */
@@ -750,7 +755,7 @@ function renderEvents(){
   list.innerHTML = evs.length ? evs.map(e=>{
     const d=new Date(e.date+"T12:00:00");
     const when=d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",year:"numeric"})+(e.time?` · ${esc(e.time)}`:"");
-    return `<article class="card ev"><div class="date"><small>${d.toLocaleDateString("en-US",{month:"short"}).toUpperCase()}</small><b>${d.getDate()}</b></div>
+    return `${e.img?`<a class="card ev-flyer" href="${esc(e.img)}" data-name="${esc(e.title)}"><img src="${esc(e.img)}" alt="${esc(e.title)} flyer" loading="lazy"><span>View flyer</span></a>`:""}<article class="card ev"><div class="date"><small>${d.toLocaleDateString("en-US",{month:"short"}).toUpperCase()}</small><b>${d.getDate()}</b></div>
       <div style="min-width:0"><h4>${esc(e.title)}</h4>
       <div class="meta"><span>${svg("cal",'width="13" height="13" style="vertical-align:-2px"')} ${when}</span>${e.where?`<span>${svg("pin",'width="13" height="13" style="vertical-align:-2px"')} ${esc(e.where)}</span>`:""}</div>
       ${e.desc?`<p>${esc(e.desc)}</p>`:""}${e.st&&e.st!=="BOTH"?`<div style="margin-top:8px">${stPill(e.st)}</div>`:""}</div></article>`; }).join("")
