@@ -176,6 +176,10 @@ a.li:hover{background:var(--sunken)}
 .bar i{display:block;height:100%}
 .pgrid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));align-items:start}
 .pcard{display:flex;flex-direction:column;overflow:hidden}
+.lic{margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:12px;background:var(--red-soft);border:2px solid var(--red)}
+.lic>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lic-k{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
+.lic-v{font-family:var(--display);font-size:30px;font-weight:900;line-height:1.05;letter-spacing:.02em;color:var(--fg)}
 .ev.has-flyer{grid-column:1/-1;display:grid;grid-template-columns:200px auto minmax(0,1fr);gap:18px;align-items:start}
 .ev-flyer{position:relative;display:block;border-radius:10px;overflow:hidden;box-shadow:0 6px 16px -6px rgba(0,0,0,.35);transition:transform .2s}
 .ev-flyer:hover{transform:translateY(-3px) rotate(-1deg)}
@@ -331,10 +335,11 @@ const CONTENT = {
   ],
   wifi: [ {location:"Collegeville office", network:"Keller Williams", password:"Agent@wifi"}, {location:"Atlantic City office", network:"keller_3103", password:"terese67"} ],
   brokers: [
-    {name:"Terese Brittingham", role:"Broker / Owner · Operating Principal", scope:"PA & NJ", phone:"610-212-0848", email:"teresekw@gmail.com"},
-    {name:"Thomas McCouch", role:"Owner", scope:"PA", phone:"610-574-9272", email:"mccouch7@gmail.com"}
+    {name:"Terese Brittingham", role:"Broker", scope:"PA & NJ", phone:"610-212-0848", email:"teresekw@gmail.com"}
   ],
   leadership: [
+    {name:"Terese Brittingham", role:"Owner & Operating Principal", phone:"610-212-0848", email:"teresekw@gmail.com"},
+    {name:"Thomas McCouch", role:"Owner & Operating Principal", phone:"610-574-9272", email:"mccouch7@gmail.com"},
     {name:"Marisa McLaughlin", role:"Team Leader", phone:"484-802-9801", email:"marisa.mclaughlin@kw.com"},
     {name:"Dan Carroll", role:"Market Center Administrator", phone:"", email:"danielcarrollkw@gmail.com"},
     {name:"Miranda Bildstein", role:"Director of Agent Services · Lunch & Learn · signs, riders, lockboxes & supplies", phone:"", email:"mirandabildstein@kw.com"},
@@ -1023,9 +1028,10 @@ PAGES.office = v => {
   const val=(x)=>x?`<span class="num">${esc(x)}</span>`:'<span class="todo">Needed</span>';
   v.innerHTML = head("Who, where, how","Office Info & FAQ","Office details, brokers, leadership and quick answers.")+`
   <section><h3 class="st">Offices</h3><div class="grid g2">${offs.map(o=>`<div class="card pad">${o.logo?`<div style="background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:12px;display:grid;place-items:center"><img src="${esc(o.logo)}" alt="${esc(o.name)} logo" style="height:64px;width:auto;max-width:100%;object-fit:contain"></div>`:""}<div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><div><b style="font-size:16px">${esc(o.short)}</b><div class="note">DBA ${esc(o.name)}${o.mc?` · ${esc(o.mc)}`:""}</div></div>${stPill(o.state)}</div>
-    <dl class="kv" style="margin-top:12px"><dt>Address</dt><dd>${esc(o.address)}</dd><dt>Phone</dt><dd><span class="num">${esc(o.phone)}</span><button class="copy" onclick="copyText('${esc(o.phone)}',this)">Copy</button></dd><dt>Fax</dt><dd>${val(o.fax)}</dd><dt>Broker license #</dt><dd>${val(o.license)}</dd><dt>Hours</dt><dd>${o.hours?esc(o.hours):'<span class="todo">Needed</span>'}</dd></dl></div>`).join("")}</div></section>
+    ${o.license?`<div class="lic"><div><span class="lic-k">${esc(o.state)} Brokerage License #</span><span class="lic-v num">${esc(o.license)}</span></div><button class="copy" onclick="copyText('${esc(o.license)}',this)">Copy</button></div>`:""}
+    <dl class="kv" style="margin-top:12px"><dt>Address</dt><dd>${esc(o.address)}</dd><dt>Phone</dt><dd><span class="num">${esc(o.phone)}</span><button class="copy" onclick="copyText('${esc(o.phone)}',this)">Copy</button></dd><dt>Fax</dt><dd>${val(o.fax)}</dd><dt>Hours</dt><dd>${o.hours?esc(o.hours):'<span class="todo">Needed</span>'}</dd></dl></div>`).join("")}</div></section>
   <section class="card"><div class="bhead"><h3 style="margin:0">WiFi</h3><span class="note">Agents only</span></div><div class="tw"><table><thead><tr><th>Location</th><th>Network</th><th>Password</th></tr></thead><tbody>${CONTENT.wifi.map(w=>`<tr><td>${esc(w.location)}</td><td>${w.network?esc(w.network):'<span class="todo">Needed</span>'}</td><td class="num">${w.password?esc(w.password):"—"}</td></tr>`).join("")}</tbody></table></div></section>
-  <section><h3 class="st">Brokers</h3><div class="grid g3">${CONTENT.brokers.filter(b=>STATE_FILTER==="ALL"||b.scope.includes(STATE_FILTER)).map(person).join("")}</div></section>
+  <section><h3 class="st">Broker</h3><div class="grid g3" style="max-width:520px">${CONTENT.brokers.filter(b=>STATE_FILTER==="ALL"||b.scope.includes(STATE_FILTER)).map(person).join("")}</div></section>
   <section><h3 class="st">Market center leadership</h3><div class="grid g3">${CONTENT.leadership.map(person).join("")}</div></section>
   <section class="card"><div class="bhead"><h3 style="margin:0">Frequently asked</h3></div>${CONTENT.faq.map((f,i)=>`<details style="border-bottom:1px solid var(--line);padding:12px 18px"><summary style="cursor:pointer;font-weight:600">${esc(f.q)}</summary><p style="margin:8px 0 0;color:var(--muted)">${f.a?esc(f.a):'<span class="todo">Answer needed</span>'}</p></details>`).join("")}</section>`;
 };
