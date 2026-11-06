@@ -609,7 +609,6 @@ const ROUTES = [
   {id:"calendar", label:"Training Calendar"},
   {id:"partners", label:"Partners"},
   {id:"office", label:"Office Info & FAQ"},
-  {id:"njpa", label:"NJ vs PA"},
   {id:"assoc", label:"Realtor Associations"},
   {grp:"Grow"},
   {id:"ascend", label:"Rising Stars"},
@@ -719,7 +718,6 @@ function missingItems(){
   if(!C.ascend.director.name) m.push("Rising Stars director / access contact");
   C.ascend.links.forEach(l=>{ if(!l.url) m.push(l.name); });
   if(C.faq.some(f=>!f.a)) m.push("FAQ answers");
-  if(C.njpa.some(r=>!r.pa)) m.push("NJ vs PA guide content (broker review)");
   return m;
 }
 
@@ -729,7 +727,7 @@ const PAGES = {};
 /* ---------------- HUB ---------------- */
 PAGES.hub = v => {
   const first=(P.name||"").split(" ")[0];
-  const QL=[["marketing","Marketing"],["training","Tech Training"],["forms","Forms"],["partners","Partners"],["office","Office Info"],["lonewolf","Lone Wolf"],["deals","Deal Analyzer"],["njpa","NJ vs PA"],["assoc","Associations"],["money","My Money"],["calendar","Training Calendar"]];
+  const QL=[["marketing","Marketing"],["training","Tech Training"],["forms","Forms"],["partners","Partners"],["office","Office Info"],["lonewolf","Lone Wolf"],["deals","Deal Analyzer"],["assoc","Associations"],["money","My Money"],["calendar","Training Calendar"]];
   v.innerHTML = `
   <section class="hero">
     <div style="position:relative;z-index:1">
@@ -1034,14 +1032,6 @@ PAGES.office = v => {
   <section><h3 class="st">Broker</h3><div class="grid g3" style="max-width:520px">${CONTENT.brokers.filter(b=>STATE_FILTER==="ALL"||b.scope.includes(STATE_FILTER)).map(person).join("")}</div></section>
   <section><h3 class="st">Market center leadership</h3><div class="grid g3">${CONTENT.leadership.map(person).join("")}</div></section>
   <section class="card"><div class="bhead"><h3 style="margin:0">Frequently asked</h3></div>${CONTENT.faq.map((f,i)=>`<details style="border-bottom:1px solid var(--line);padding:12px 18px"><summary style="cursor:pointer;font-weight:600">${esc(f.q)}</summary><p style="margin:8px 0 0;color:var(--muted)">${f.a?esc(f.a):'<span class="todo">Answer needed</span>'}</p></details>`).join("")}</section>`;
-};
-
-/* ---------------- NJ vs PA ---------------- */
-PAGES.njpa = v => {
-  v.innerHTML = head("Cross-state guide","NJ vs PA","Working both sides of the bridge — the differences that change how you write, disclose and close.")+`
-  <div class="card"><div class="tw"><table><thead><tr><th style="width:26%">Topic</th><th><span class="pill pa">PA</span> Pennsylvania</th><th><span class="pill nj">NJ</span> New Jersey</th></tr></thead><tbody>
-  ${CONTENT.njpa.map(r=>`<tr><td style="font-weight:600">${esc(r.topic)}</td><td>${r.pa?esc(r.pa):'<span class="todo">Broker review</span>'}</td><td>${r.nj?esc(r.nj):'<span class="todo">Broker review</span>'}</td></tr>`).join("")}</tbody></table></div></div>
-  <p class="note">Content is added after broker review so every answer matches how our two brokerages actually operate.</p>`;
 };
 
 /* ---------------- REALTOR ASSOCIATIONS ---------------- */
