@@ -176,6 +176,23 @@ a.li:hover{background:var(--sunken)}
 .bar i{display:block;height:100%}
 .pgrid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));align-items:start}
 .pcard{display:flex;flex-direction:column;overflow:hidden}
+.perk{padding:0;overflow:hidden;margin-bottom:16px}
+.perk-top{display:flex;justify-content:space-between;gap:20px;padding:24px 24px 18px;background:linear-gradient(135deg,var(--red-soft),transparent 70%);flex-wrap:wrap}
+.perk-top>div:first-child{flex:1;min-width:240px}
+.perk-kick{font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--red)}
+.perk-top h3{font-family:var(--display);font-size:26px;margin:4px 0 8px}
+.perk-top p{margin:0;color:var(--muted);max-width:620px}
+.perk-price{flex:none;align-self:flex-start;text-align:center;background:var(--red);color:#fff;border-radius:16px;padding:14px 22px;transform:rotate(2deg);box-shadow:0 10px 20px -10px rgba(200,16,46,.6)}
+.perk-tag{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.9}
+.perk-price b{display:block;font-family:var(--display);font-size:48px;line-height:1;margin-top:4px}
+.perk-price small{font-size:18px;font-weight:600;margin-left:2px}
+.perk-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;padding:18px 24px;border-top:1px solid var(--line)}
+.perk-groups h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.perk-groups ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.perk-groups li{position:relative;padding-left:22px;font-size:14px;line-height:1.35}
+.perk-groups li:before{content:"";position:absolute;left:0;top:3px;width:14px;height:14px;border-radius:50%;background:var(--red) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3.5 7.2 6 9.5l4.5-5' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat}
+.perk-cta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 24px 22px;border-top:1px solid var(--line)}
+.perk-more{display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap}.perk-more .note{flex:1;min-width:200px}
 .lic{margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:12px;background:var(--red-soft);border:2px solid var(--red)}
 .lic>div{display:flex;flex-direction:column;gap:2px;min-width:0}
 .lic-k{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
@@ -561,6 +578,15 @@ const CONTENT = {
   suggestionForm: "https://form.jotform.com/263084624761056",
   /* Upcoming events — newest additions anywhere; past events hide automatically.
      Format: {title:"", date:"YYYY-MM-DD", time:"11:00 AM", st:"BOTH"|"PA"|"NJ", where:"", desc:""} */
+  perks: [
+    {name:"Club Studio Collegeville", kicker:"Fitness & recovery", price:"$129", per:"/mo", st:"BOTH", url:"https://www.clubstudiofitness.com/Pages/DefaultCorp.aspx?company=kellerwilliamscsvouchers",
+     blurb:"The new Club Studio near Collegeville is offering KWRG agents a special membership: unlimited boutique classes, the full club and unlimited recovery — all in one.",
+     groups:[
+      {h:"Classes & club", items:["Unlimited boutique studio classes","All strength and cardio equipment","Performance lifting platforms & functional turf area","Lap pool, basketball and racquetball courts","Locker room, spa, steam room & sauna","Towel service","MY ACHIEVEMENTS on the mobile app"]},
+      {h:"Recovery — unlimited", items:["Red light therapy","HydroMassage beds","Normatec compression therapy","Hyperice recovery technology","Whole body cryotherapy","Localized cryotherapy"]},
+      {h:"Extras", items:["1 complimentary one-on-one personal training assessment","Club VIP Card with partner discount offers"]}
+     ]}
+  ],
   events: [
     {title:"KWRG Agent Happy Hour — Cheers to the Season!", date:"2026-11-11", time:"3:00 – 4:00 PM", st:"BOTH", where:"Harvest Seasonal Grill & Wine Bar, Providence Town Center · 51 Town Center Dr, Collegeville", desc:"Come clink glasses with your KWRG crew and kick off the holidays together! Swap stories, toast a great year and just have fun. Pay your own tab — we'll bring the good company.", img:"files/happy-hour-2026-11-11.jpg"},
     {title:"Watch Party: Cut the Noise, Do More Deals with Jeff Glover", date:"2026-12-03", time:"9:00 AM – 12:30 PM", st:"BOTH", where:"KWRG Office · 400 Arcola Rd, Suite A5, Collegeville", desc:"Watch Jeff Glover's live virtual tour with the KWRG crew: prospecting, open houses, referrals, expireds & FSBOs and AI for leads. Leave with scripts to use that day. Lunch is on us — please RSVP by Mon, Nov 30 so we order enough food.", img:"files/watch-party-2026-12-03.jpg", rsvp:"https://form.jotform.com/263087176582062"},
@@ -581,6 +607,7 @@ function copyText(txt,btn){ try{ navigator.clipboard.writeText(txt).then(()=>toa
 function sel(btn){ const s=btn?.previousElementSibling; if(!s)return; const r=document.createRange(); r.selectNodeContents(s); const w=getSelection(); w.removeAllRanges(); w.addRange(r); toast("Selected — press copy"); }
 
 const IC = {
+  perks:'<rect x="3" y="8" width="18" height="13" rx="1.5"/><path d="M3 12h18M12 8v13"/><path d="M12 8c-2-4-7-4-7-1s5 1 7 1zM12 8c2-4 7-4 7-1s-5 1-7 1z"/>',
   hub:'<path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/>',
   goals:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
   money:'<rect x="2.5" y="6" width="19" height="13" rx="2"/><circle cx="12" cy="12.5" r="3"/><path d="M6 9.5h.01M18 15.5h.01"/>',
@@ -616,6 +643,7 @@ const ROUTES = [
   {id:"training", label:"Tech Training"},
   {id:"calendar", label:"Training Calendar"},
   {id:"partners", label:"Partners"},
+  {id:"perks", label:"KWRG Perks"},
   {id:"office", label:"Office Info & FAQ"},
   {id:"assoc", label:"Realtor Associations"},
   {grp:"Grow"},
@@ -735,7 +763,7 @@ const PAGES = {};
 /* ---------------- HUB ---------------- */
 PAGES.hub = v => {
   const first=(P.name||"").split(" ")[0];
-  const QL=[["marketing","Marketing"],["training","Tech Training"],["forms","Forms"],["partners","Partners"],["office","Office Info"],["lonewolf","Lone Wolf"],["deals","Deal Analyzer"],["assoc","Associations"],["money","My Money"],["calendar","Training Calendar"]];
+  const QL=[["marketing","Marketing"],["training","Tech Training"],["forms","Forms"],["partners","Partners"],["perks","KWRG Perks"],["office","Office Info"],["lonewolf","Lone Wolf"],["deals","Deal Analyzer"],["assoc","Associations"],["money","My Money"],["calendar","Training Calendar"]];
   v.innerHTML = `
   <section class="hero">
     <div style="position:relative;z-index:1">
@@ -992,6 +1020,18 @@ function quickRefHTML(){
 }
 
 /* ---------------- PARTNERS ---------------- */
+PAGES.perks = v => {
+  const L=CONTENT.perks.filter(p=>stOK(p.st||"BOTH"));
+  v.innerHTML = head("Just for you","KWRG Perks","Exclusive deals and discounts for KWRG agents in our PA and NJ offices.")+
+  (L.length?L.map(p=>`<article class="card perk">
+    <div class="perk-top"><div><span class="perk-kick">${esc(p.kicker)}</span><h3>${esc(p.name)}</h3><p>${esc(p.blurb)}</p></div>
+      <div class="perk-price"><span class="perk-tag">KWRG agent special</span><b class="num">${esc(p.price)}<small>${esc(p.per)}</small></b></div></div>
+    <div class="perk-groups">${p.groups.map(g=>`<div><h4>${esc(g.h)}</h4><ul>${g.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul></div>`).join("")}</div>
+    <div class="perk-cta"><a class="btn" href="${esc(p.url)}" target="_blank" rel="noopener" style="background:var(--red);border-color:var(--red);color:#fff">Claim this perk ${svg("ext",'width="13" height="13"')}</a><span class="note">Opens the KWRG member sign-up page</span></div>
+  </article>`).join(""):`<div class="empty">No perks for this office yet — check back soon!</div>`)+
+  `<section class="card pad perk-more"><b>Know a business that would offer KWRG agents a deal?</b><span class="note">Let us know through the Suggestion Box and we'll reach out.</span><a class="btn sm" href="#suggest">Suggest a perk</a></section>`;
+};
+
 PAGES.partners = v => {
   const ORDER=["Title","Lender","Insurance","Home Warranty","Media","Inspection"], TIER={Platinum:0,Silver:1,Bronze:2};
   const rank=t=>{const i=ORDER.indexOf(t);return i<0?ORDER.length:i;};
